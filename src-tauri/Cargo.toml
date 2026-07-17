@@ -1,0 +1,26 @@
+[package]
+name = "sp-system-monitor"
+version = "0.1.0"
+description = "SP System Monitor - Real-time Linux hardware telemetry & control panel"
+authors = ["SP-Cybersoft"]
+edition = "2021"
+
+[lib]
+name = "sp_system_monitor_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-shell = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true

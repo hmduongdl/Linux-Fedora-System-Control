@@ -1,0 +1,14 @@
+/mnt/Work/Linux-Fedora-System-Control/src-tauri/target/debug/deps/serde-3d3aa5e46be4cf4c.d: /home/hoangminhduong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /home/hoangminhduong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /home/hoangminhduong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /home/hoangminhduong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /home/hoangminhduong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /mnt/Work/Linux-Fedora-System-Control/src-tauri/target/debug/build/serde-51d80f5d345f5c47/out/private.rs
+
+/mnt/Work/Linux-Fedora-System-Control/src-tauri/target/debug/deps/libserde-3d3aa5e46be4cf4c.rlib: /home/hoangminhduong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /home/hoangminhduong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /home/hoangminhduong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /home/hoangminhduong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /home/hoangminhduong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /mnt/Work/Linux-Fedora-System-Control/src-tauri/target/debug/build/serde-51d80f5d345f5c47/out/private.rs
+
+/mnt/Work/Linux-Fedora-System-Control/src-tauri/target/debug/deps/libserde-3d3aa5e46be4cf4c.rmeta: /home/hoangminhduong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /home/hoangminhduong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /home/hoangminhduong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /home/hoangminhduong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /home/hoangminhduong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /mnt/Work/Linux-Fedora-System-Control/src-tauri/target/debug/build/serde-51d80f5d345f5c47/out/private.rs
+
+/home/hoangminhduong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs:
+/home/hoangminhduong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs:
+/home/hoangminhduong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs:
+/home/hoangminhduong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs:
+/home/hoangminhduong/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs:
+/mnt/Work/Linux-Fedora-System-Control/src-tauri/target/debug/build/serde-51d80f5d345f5c47/out/private.rs:
+
+# env-dep:OUT_DIR=/mnt/Work/Linux-Fedora-System-Control/src-tauri/target/debug/build/serde-51d80f5d345f5c47/out
