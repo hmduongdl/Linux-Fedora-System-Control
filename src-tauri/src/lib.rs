@@ -9,6 +9,9 @@ pub fn run() {
             audio::set_audio_volume,
             audio::toggle_audio_mute,
             audio::set_default_audio_output,
+            bluetooth::get_bluetooth_state,
+            bluetooth::scan_bluetooth_devices,
+            bluetooth::connect_bluetooth_device,
             optimizer::set_power_profile,
             optimizer::toggle_gamemode,
             optimizer::check_gamemode_status,
@@ -17,6 +20,7 @@ pub fn run() {
             optimizer::toggle_do_not_disturb,
             optimizer::toggle_keep_awake,
             optimizer::set_shutdown_timer,
+            optimizer::system_power_action,
             mpris::media_play_pause,
             mpris::media_next,
             mpris::media_previous,
@@ -26,6 +30,7 @@ pub fn run() {
             monitor::get_battery,
             monitor::set_battery_limiter,
             monitor::get_running_game,
+            get_local_ip,
             msi_ec::check_msi_ec_supported,
             msi_ec::get_msi_ec_state,
             msi_ec::set_msi_ec_cooler_boost,
@@ -50,6 +55,10 @@ pub fn run() {
             app.manage(mpris::start(ipc.clone()));
             let telemetry = TelemetryEngine::new();
             telemetry.start(app.handle().clone(), ipc.clone());
+            // Re-enable MangoHud/Game Mode monitoring. The worker is
+            // intentionally throttled (8s while a log is active, 5s while
+            // idle) so FPS history is available without recreating the
+            // previous high-frequency polling lag.
             mangohud::start_worker(app.handle().clone(), ipc.clone());
             app.manage(ipc);
             app.manage(telemetry);
@@ -66,6 +75,17 @@ pub fn run() {
             let window = app
                 .get_webview_window("main")
                 .ok_or_else(|| "main webview window was not created".to_owned())?;
+
+            // Start at 80% of the active monitor so the initial window is
+            // comfortable on 720p/FHD/2K/4K displays. Fullscreen later uses
+            // the monitor's native size; this native call avoids frontend
+            // `window.set_size` permission errors and resize feedback loops.
+            if let Ok(Some(monitor)) = window.current_monitor() {
+                let monitor_size = monitor.size();
+                let width = ((monitor_size.width as f64) * 0.8).round() as u32;
+                let height = ((monitor_size.height as f64) * 0.8).round() as u32;
+                let _ = window.set_size(tauri::PhysicalSize::new(width, height));
+            }
 
             // Opening WebKitGTK's inspector automatically makes development
             // restarts much less reliable on Linux. Keep it opt-in so normal
@@ -101,6 +121,7 @@ pub fn run() {
         });
 }
 mod audio;
+mod bluetooth;
 mod ipc;
 mod mangohud;
 mod monitor;
@@ -113,3 +134,15 @@ use ipc::IpcEmitter;
 use monitor::TelemetryEngine;
 use tauri::Manager;
 mod mpris;
+
+#[tauri::command]
+fn get_local_ip() -> Option<String> {
+    use std::net::UdpSocket;
+
+    // Connecting a UDP socket does not send traffic, but lets the OS select
+    // the interface currently used for the default route.
+    let socket = UdpSocket::bind("0.0.0.0:0").ok()?;
+    socket.connect("1.1.1.1:80").ok()?;
+    let address = socket.local_addr().ok()?.ip();
+    (!address.is_loopback()).then(|| address.to_string())
+}

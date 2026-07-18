@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { invoke } from "@tauri-apps/api/core";
 import { Activity, BatteryCharging, BriefcaseBusiness, Cpu, Eraser, Gamepad2, Gauge, HardDrive, Keyboard, LoaderCircle, MemoryStick, Timer, VolumeX, Wind, X, Zap } from "lucide-react";
 import { useSystemStore } from "../store/useSystemStore";
-import { useAutoResize } from "../hooks/useAutoResize";
 
 const PINK = "#ec1c6f";
 const CYAN = "#22d3ee";
@@ -397,28 +395,22 @@ function SystemSnapshot() {
   );
 }
 
-type OperatingMode = "work" | "game" | "silent";
-
 function OperatingModeCard() {
-  const [mode, setMode] = useState<OperatingMode>("work");
-  const [pending, setPending] = useState<OperatingMode | null>(null);
+  const mode = useSystemStore((state) => state.operatingMode);
+  const setOperatingMode = useSystemStore((state) => state.setOperatingMode);
+  const [pending, setPending] = useState<typeof mode | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const refreshEc = useSystemStore((state) => state.fetchMsiEcState);
-  const refreshBattery = useSystemStore((state) => state.fetchBattery);
-  const modes: { id: OperatingMode; label: string; icon: ReactNode; description: string }[] = [
+  const modes: { id: typeof mode; label: string; icon: ReactNode; description: string }[] = [
     { id: "work", label: "Work", icon: <BriefcaseBusiness size={14} />, description: "Balanced daily profile" },
     { id: "game", label: "Game", icon: <Gamepad2 size={14} />, description: "Maximum performance" },
     { id: "silent", label: "Silent", icon: <VolumeX size={14} />, description: "Quiet operation" },
   ];
 
-  const activate = async (nextMode: OperatingMode) => {
+  const activate = async (nextMode: typeof mode) => {
     setPending(nextMode);
     setMessage(null);
     try {
-      const result = await invoke<{ mode: OperatingMode; warnings: string[] }>("set_operating_mode", { mode: nextMode });
-      setMode(result.mode);
-      setMessage(result.warnings.length ? result.warnings.join(" · ") : `${nextMode} mode enabled`);
-      await Promise.all([refreshEc(), refreshBattery()]);
+      setMessage(await setOperatingMode(nextMode));
     } catch (error) {
       setMessage(`Mode switch failed: ${String(error)}`);
     } finally {
@@ -452,7 +444,6 @@ function OperatingModeCard() {
 
 export function MsiCenterPage() {
   const mainRef = useRef<HTMLElement>(null);
-  useAutoResize(mainRef, true);
   const state = useSystemStore((s) => s.msiEcState);
   const telemetry = useSystemStore((s) => s.telemetry);
   const cpu = telemetry?.cpu.cores.find((core) => core.temperature_celsius != null)?.temperature_celsius ?? state?.cpu_temp;
@@ -465,7 +456,7 @@ export function MsiCenterPage() {
 
   return (
     <main ref={mainRef} className="msi-page">
-      <div className="msi-monitor-layout mx-auto w-full max-w-[1700px]">
+      <div className="msi-monitor-layout w-full">
         <section className="msi-metrics-row">
           <MetricCard title="CPU Temp" value={value(cpu)} unit="°C" accent={PINK} icon={<Activity size={15} />} history={cpu ? [cpu - 5, cpu - 2, cpu + 1, cpu - 3, cpu] : []} />
           <MetricCard title="GPU Temp" value={value(gpu)} unit="°C" accent={CYAN} icon={<Gauge size={15} />} history={gpu ? [gpu - 4, gpu - 1, gpu + 2, gpu - 2, gpu] : []} />

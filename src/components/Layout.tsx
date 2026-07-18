@@ -1,5 +1,4 @@
 import { memo, useRef, type ReactNode } from "react";
-import { useAutoResize } from "../hooks/useAutoResize";
 
 interface LayoutProps {
   children: ReactNode;
@@ -7,7 +6,6 @@ interface LayoutProps {
 
 const Layout = memo(function Layout({ children }: LayoutProps) {
   const mainRef = useRef<HTMLElement>(null);
-  useAutoResize(mainRef, true);
 
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden bg-[#0a0a0f] text-[#e4e1e9]">
@@ -19,7 +17,7 @@ const Layout = memo(function Layout({ children }: LayoutProps) {
           paddingBottom: "calc(var(--dock-height, 68px) + 32px)",
         }}
       >
-        <div className="dashboard-columns mx-auto w-full max-w-[1700px]" style={{ height: "100%" }}>
+        <div className="dashboard-columns w-full" style={{ height: "100%" }}>
           {children}
         </div>
       </main>

@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { Gamepad2, Trash2, Shield, Activity, Cpu, Sparkles, History, HelpCircle } from "lucide-react";
+import { Gamepad2, Activity, Cpu, History, HelpCircle } from "lucide-react";
 import { useSystemStore } from "../store/useSystemStore";
-import { useAutoResize } from "../hooks/useAutoResize";
 import { GameStatusWidget } from "./widgets/GameStatusWidget";
 import { RunningGameWidget } from "./widgets/RunningGameWidget";
 import { WidgetFactory } from "./widgets/factory";
@@ -10,17 +9,9 @@ import type { GameSession } from "../types/schema";
 
 export default function GameModePage() {
   const mainRef = useRef<HTMLElement>(null);
-  useAutoResize(mainRef, true);
 
   const active = useSystemStore((s) => s.controls.is_gamemode_active);
   const toggle = useSystemStore((s) => s.toggleGamemode);
-  const clearRam = useSystemStore((s) => s.clearRamCache);
-  const cleanDisk = useSystemStore((s) => s.cleanDiskCache);
-
-  const [clearingRam, setClearingRam] = useState(false);
-  const [clearingDisk, setClearingDisk] = useState(false);
-  const [actionStatus, setActionStatus] = useState<string | null>(null);
-  const [isSuccess, setIsSuccess] = useState<boolean>(true);
 
   // MangoHud states
   const [isMangoInstalled, setIsMangoInstalled] = useState<boolean>(false);
@@ -73,36 +64,6 @@ export default function GameModePage() {
     }
   };
 
-  const handleClearRam = async () => {
-    setClearingRam(true);
-    setActionStatus(null);
-    try {
-      const msg = await clearRam();
-      setIsSuccess(true);
-      setActionStatus(msg || "Đã giải phóng bộ nhớ RAM thành công!");
-    } catch (error) {
-      setIsSuccess(false);
-      setActionStatus(`Lỗi RAM: ${String(error)}`);
-    } finally {
-      setClearingRam(false);
-    }
-  };
-
-  const handleCleanDisk = async () => {
-    setClearingDisk(true);
-    setActionStatus(null);
-    try {
-      const msg = await cleanDisk();
-      setIsSuccess(true);
-      setActionStatus(msg || "Đã dọn dẹp bộ nhớ đệm ổ đĩa thành công!");
-    } catch (error) {
-      setIsSuccess(false);
-      setActionStatus(`Lỗi Disk: ${String(error)}`);
-    } finally {
-      setClearingDisk(false);
-    }
-  };
-
   const formatTime = (ms: number) => {
     const date = new Date(ms);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' - ' + date.toLocaleDateString([], { day: '2-digit', month: '2-digit' });
@@ -118,7 +79,7 @@ export default function GameModePage() {
           paddingBottom: "calc(var(--dock-height, 68px) + 32px)",
         }}
       >
-        <div className="dashboard-columns mx-auto w-full max-w-[1700px]">
+        <div className="dashboard-columns w-full">
           {/* ── Cột 1: Điều khiển Game Mode ── */}
           <div className="dashboard-column">
             <WidgetFactory title="ĐIỀU KHIỂN CHẾ ĐỘ" icon={<Gamepad2 size={14} />} accentColor="text-emerald-400">
@@ -244,43 +205,6 @@ export default function GameModePage() {
               </div>
             </WidgetFactory>
 
-            {/* Quick Actions (moved from Dashboard) */}
-            <WidgetFactory title="TỐI ƯU HỆ THỐNG" icon={<Sparkles size={14} />} accentColor="text-cyan-accent">
-              <div className="flex flex-col gap-2.5 py-1">
-                <p className="text-[10px] text-on-surface-variant leading-relaxed">
-                  Các thao tác dọn dẹp nhanh bộ nhớ đệm và tệp tạm thời để giải phóng dung lượng và tối đa hóa tài nguyên hệ thống trước khi bắt đầu trò chơi.
-                </p>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={handleClearRam}
-                    disabled={clearingRam || clearingDisk}
-                    className="flex items-center justify-center gap-1.5 rounded border border-white/10 bg-black/20 p-2.5 text-[9px] font-bold text-slate-400 hover:border-cyan-accent/30 hover:text-cyan-accent transition-colors disabled:cursor-wait disabled:opacity-50"
-                  >
-                    <Trash2 size={12} />
-                    {clearingRam ? "Đang giải phóng..." : "Giải phóng RAM"}
-                  </button>
-                  <button
-                    onClick={handleCleanDisk}
-                    disabled={clearingRam || clearingDisk}
-                    className="flex items-center justify-center gap-1.5 rounded border border-white/10 bg-black/20 p-2.5 text-[9px] font-bold text-slate-400 hover:border-pink-accent/30 hover:text-pink-accent transition-colors disabled:cursor-wait disabled:opacity-50"
-                  >
-                    <Shield size={12} />
-                    {clearingDisk ? "Đang dọn dẹp..." : "Dọn dẹp Disk"}
-                  </button>
-                </div>
-
-                {actionStatus && (
-                  <div className={`mt-1 rounded p-1.5 text-[8px] font-mono leading-normal break-words ${
-                    isSuccess 
-                      ? "border border-emerald-500/10 bg-emerald-500/5 text-emerald-400"
-                      : "border border-red-500/10 bg-red-500/5 text-red-400"
-                  }`}>
-                    {actionStatus}
-                  </div>
-                )}
-              </div>
-            </WidgetFactory>
           </div>
 
           {/* ── Cột 2: Trạng thái Game & Lịch sử phiên chơi ── */}

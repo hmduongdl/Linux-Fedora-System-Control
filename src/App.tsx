@@ -1,21 +1,36 @@
-import { useState, useEffect } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { useIpcListener } from "./hooks/useIpcListener";
+import { useIpcListener, type ActivePage } from "./hooks/useIpcListener";
 import MediaPlayerWidget from "./components/MediaPlayerWidget";
 import { AudioMixerWidget } from "./components/AudioMixerWidget";
+import { ConnectedDevicesWidget } from "./components/ConnectedDevicesWidget";
 import { SystemMetricsWidget } from "./components/widgets/SystemMetricsWidget";
 import { PerformanceHistoryWidget } from "./components/widgets/PerformanceHistoryWidget";
 import { SessionToolsWidget } from "./components/widgets/SessionToolsWidget";
-import { MsiCenterPage } from "./components/MsiCenterPage";
-import GameModePage from "./components/GameModePage";
 import { TopProcessesWidget } from "./components/widgets/TopProcessesWidget";
+import { SystemOptimizationWidget } from "./components/widgets/SystemOptimizationWidget";
 import Layout from "./components/Layout";
 import { BottomDock } from "./components/BottomDock";
 
+const GameModePage = lazy(() => import("./components/GameModePage"));
+const MsiCenterPage = lazy(() =>
+  import("./components/MsiCenterPage").then((module) => ({ default: module.MsiCenterPage })),
+);
+
+function PageLoadingFallback() {
+  return (
+    <div className="flex h-screen w-full items-center justify-center bg-[#0a0a0f]">
+      <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-slate-500">
+        <span className="h-2 w-2 animate-pulse rounded-full bg-cyan-accent" /> Loading page…
+      </div>
+    </div>
+  );
+}
+
 function App() {
-  useIpcListener();
-  const [activeTab, setActiveTab] = useState<"dashboard" | "game" | "msi">("dashboard");
+  const [activeTab, setActiveTab] = useState<ActivePage>("dashboard");
+  useIpcListener(activeTab);
   const [helperStatus, setHelperStatus] = useState<any>(null);
   const [showHelperModal, setShowHelperModal] = useState(false);
   const [alwaysAuthenticate, setAlwaysAuthenticate] = useState(() =>
@@ -71,6 +86,7 @@ function App() {
         <div className="dashboard-column">
           <MediaPlayerWidget />
           <AudioMixerWidget />
+          <ConnectedDevicesWidget />
         </div>
 
         {/* ── Column 2: Performance Stats ── */}
@@ -83,12 +99,13 @@ function App() {
         <div className="dashboard-column">
           <SessionToolsWidget />
           <TopProcessesWidget />
+          <SystemOptimizationWidget />
         </div>
         </Layout>
       ) : activeTab === "game" ? (
-        <GameModePage />
+        <Suspense fallback={<PageLoadingFallback />}><GameModePage /></Suspense>
       ) : (
-        <MsiCenterPage />
+        <Suspense fallback={<PageLoadingFallback />}><MsiCenterPage /></Suspense>
       )}
 
       <BottomDock

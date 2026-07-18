@@ -52,6 +52,9 @@ pub async fn set_operating_mode(
     mode: String,
     telemetry: tauri::State<'_, TelemetryEngine>,
 ) -> Result<OperatingModeResult, String> {
+    let _control_guard = optimizer::SYSTEM_CONTROL_LOCK
+        .try_lock()
+        .map_err(|_| "another system mode change is already running".to_owned())?;
     let mut warnings = Vec::new();
     let (shift, fan, boost, power, muted, polling, battery_limit) = match mode.as_str() {
         "work" => (
@@ -70,7 +73,7 @@ pub async fn set_operating_mode(
             optimizer::PowerProfile::Performance,
             true,
             5,
-            None,
+            Some(false),
         ),
         "silent" => (
             "eco",

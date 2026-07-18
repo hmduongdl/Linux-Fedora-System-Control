@@ -45,7 +45,7 @@ const COLOR_MAP: Record<string, string> = {
   "CÔNG CỤ PHIÊN":       "text-primary",
   "QUICK ACTIONS":       "text-cyan-accent",
   "TRÒ CHƠI ĐANG CHẠY": "text-pink-accent",
-  "TIẾN TRÌNH HÀNG ĐẦU": "text-on-surface-variant",
+  "TIẾN TRÌNH HÀNG ĐẦU": "text-primary",
   "PERFORMANCE / HISTORY": "text-primary",
 };
 

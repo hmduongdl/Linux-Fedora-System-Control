@@ -164,6 +164,9 @@ pub fn list_recent_game_sessions() -> Result<Vec<GameSession>, String> {
     }
 
     sessions.sort_by(|a, b| b.start_time_ms.cmp(&a.start_time_ms));
+    // Keep the history bounded so opening Game Mode cannot scan/render an
+    // unbounded number of old MangoHud sessions.
+    sessions.truncate(20);
     Ok(sessions)
 }
 
@@ -173,7 +176,8 @@ fn calculate_avg_fps(path: &std::path::Path) -> Option<f64> {
     let reader = BufReader::new(file);
 
     let mut fps_col_idx: Option<usize> = None;
-    let mut fps_values = Vec::new();
+    let mut fps_sum = 0.0;
+    let mut fps_count = 0u64;
 
     for line_res in reader.lines() {
         let line = line_res.ok()?;
@@ -192,18 +196,18 @@ fn calculate_avg_fps(path: &std::path::Path) -> Option<f64> {
             if let Some(idx) = fps_col_idx {
                 if parts.len() > idx {
                     if let Ok(fps) = parts[idx].parse::<f64>() {
-                        fps_values.push(fps);
+                        fps_sum += fps;
+                        fps_count += 1;
                     }
                 }
             }
         }
     }
 
-    if fps_values.is_empty() {
+    if fps_count == 0 {
         None
     } else {
-        let sum: f64 = fps_values.iter().sum();
-        Some(sum / fps_values.len() as f64)
+        Some(fps_sum / fps_count as f64)
     }
 }
 
@@ -249,7 +253,16 @@ pub fn start_worker<R: tauri::Runtime>(_app: tauri::AppHandle<R>, ipc: IpcEmitte
         emit_null(&ipc);
 
         loop {
-            tokio::time::sleep(Duration::from_millis(1000)).await;
+            // MangoHud writes continuously while a game is running. Polling
+            // every 8 seconds is sufficient for the dashboard while keeping
+            // background work low. When idle, poll every 5 seconds so a new
+            // game/log is detected without waking the app every second.
+            let poll_interval = if last_file_path.is_some() {
+                Duration::from_secs(8)
+            } else {
+                Duration::from_secs(5)
+            };
+            tokio::time::sleep(poll_interval).await;
 
             let log_dir = match get_log_dir() {
                 Ok(dir) => dir,
@@ -259,8 +272,11 @@ pub fn start_worker<R: tauri::Runtime>(_app: tauri::AppHandle<R>, ipc: IpcEmitte
                 }
             };
 
-            if !log_dir.exists() {
-                let _ = std::fs::create_dir_all(&log_dir);
+            // Do not create the log directory from the always-on worker. It
+            // is created explicitly when MangoHud is configured, and an
+            // absent directory means there is nothing to monitor.
+            if !log_dir.is_dir() {
+                continue;
             }
 
             let mut most_recent: Option<(std::path::PathBuf, std::time::SystemTime)> = None;

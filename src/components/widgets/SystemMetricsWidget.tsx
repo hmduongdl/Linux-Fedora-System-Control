@@ -90,25 +90,28 @@ export const SystemMetricsWidget = memo(function SystemMetricsWidget() {
   const ram  = t?.ram.usage_percent ?? 0;
   const ping = t?.network.latency_ms ?? 0;
 
-  const avgTemp = useMemo(() => {
-    const cpuTemps = (t?.cpu.cores ?? [])
-      .map((c) => c.temperature_celsius)
-      .filter((temp): temp is number => temp != null);
-    const gpuTemps = (t?.gpus ?? [])
-      .map((g) => g.temperature_celsius)
-      .filter((temp): temp is number => temp != null);
-    const allTemps = [...cpuTemps, ...gpuTemps];
-    return allTemps.length
-      ? allTemps.reduce((a, b) => a + b, 0) / allTemps.length
-      : null;
+  const temperatureSensors = useMemo(() => {
+    const sensors = t?.temperatures ?? [];
+    if (sensors.length) return sensors;
+
+    // Compatibility fallback while a backend update is being rolled out.
+    return (t?.gpus ?? []).flatMap((gpu) => gpu.temperature_celsius == null
+      ? []
+      : [{ name: `GPU · ${gpu.name}`, temperature_celsius: gpu.temperature_celsius }]);
   }, [t]);
+
+  const avgTemp = useMemo(() => {
+    return temperatureSensors.length
+      ? temperatureSensors.reduce((total, sensor) => total + sensor.temperature_celsius, 0) / temperatureSensors.length
+      : null;
+  }, [temperatureSensors]);
 
   const pingData = useMemo(() => h.map((x) => ({ v: x.latency_ms ?? 0 })), [h]);
   const tempData = useMemo(() => h.map((x) => ({ v: x.avg_temp ?? 0 })), [h]);
 
 
   const ramExtra = t
-    ? `(${t.ram.used_gb.toFixed(1)} / ${t.ram.total_gb.toFixed(1)} GB)`
+    ? `(${t.ram.used_gb.toFixed(1)} / ${t.ram.total_gb.toFixed(1)} GiB)`
     : undefined;
   const storageMounts = t?.storage_mounts?.length
     ? t.storage_mounts
@@ -121,14 +124,27 @@ export const SystemMetricsWidget = memo(function SystemMetricsWidget() {
       <div className="flex flex-col gap-[clamp(10px,1.2vh,16px)]">
         {/* 2 stat tiles */}
         <div className="grid grid-cols-2 gap-[clamp(8px,1vh,12px)]">
-          <StatTile
-            label="NHIỆT ĐỘ TRUNG BÌNH"
-            value={avgTemp != null ? avgTemp.toFixed(0) : "—"}
-            unit="°C"
-            color="glow-pink text-pink-accent"
-            strokeColor="#ec4899"
-            data={tempData}
-          />
+          <div className="group relative min-w-0" tabIndex={0} aria-label="Nhiệt độ hệ thống; rê chuột để xem các cảm biến">
+            <StatTile
+              label="NHIỆT ĐỘ TRUNG BÌNH"
+              value={avgTemp != null ? avgTemp.toFixed(0) : "—"}
+              unit="°C"
+              color="glow-pink text-pink-accent"
+              strokeColor="#ec4899"
+              data={tempData}
+            />
+            <div className="pointer-events-none absolute left-0 top-full z-30 mt-2 hidden w-[min(320px,calc(100vw-2rem))] overflow-hidden rounded-lg border border-pink-accent/30 bg-[#12131c]/[.98] shadow-[0_12px_30px_rgba(0,0,0,.45)] group-hover:block group-focus:block">
+              <div className="border-b border-white/10 px-3 py-2 text-[9px] font-bold uppercase tracking-wider text-pink-300">Nhiệt độ hệ thống</div>
+              <div className="max-h-52 overflow-y-auto p-1.5">
+                {temperatureSensors.length ? temperatureSensors.map((sensor, index) => (
+                  <div key={`${sensor.name}-${index}`} className="flex items-center justify-between gap-3 rounded px-1.5 py-1 text-[10px] hover:bg-white/5">
+                    <span className="min-w-0 truncate text-[#c5c5da]" title={sensor.name}>{sensor.name}</span>
+                    <span className="shrink-0 font-mono text-pink-300">{sensor.temperature_celsius.toFixed(0)}°C</span>
+                  </div>
+                )) : <p className="px-1.5 py-2 text-[10px] text-on-surface-variant">Không tìm thấy cảm biến nhiệt độ.</p>}
+              </div>
+            </div>
+          </div>
           <StatTile
             label="ĐỘ TRỄ MẠNG"
             value={ping > 0 ? ping.toFixed(0) : "—"}
@@ -171,7 +187,7 @@ export const SystemMetricsWidget = memo(function SystemMetricsWidget() {
               value={mount.usage_percent}
               colorClass={index % 2 === 0 ? "progress-cyan" : "progress-purple"}
               textColor={index % 2 === 0 ? "text-cyan-accent" : "text-primary"}
-              extra={`(${mount.used_gb.toFixed(1)} / ${mount.total_gb.toFixed(1)} GB)`}
+              extra={`(${mount.used_gb.toFixed(1)} / ${mount.total_gb.toFixed(1)} GiB)`}
             />
           ))}
         </div>

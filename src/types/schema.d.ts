@@ -25,6 +25,11 @@ export interface GpuMetrics {
   temperature_celsius: number | null;
 }
 
+export interface TemperatureSensor {
+  name: string;
+  temperature_celsius: number;
+}
+
 export interface RamMetrics {
   total_gb: number;
   used_gb: number;
@@ -70,6 +75,7 @@ export interface SystemTelemetry {
   timestamp_ms: number;
   cpu: CpuMetrics;
   gpus: GpuMetrics[];
+  temperatures: TemperatureSensor[];
   ram: RamMetrics;
   storage: StorageMetrics;
   storage_mounts: StorageMetrics[];
@@ -213,6 +219,7 @@ export interface ShutdownTimerResult {
 export interface ProcessInfo {
   pid: number;
   name: string;
+  process_count: number;
   cpu_percent: number;
   mem_mb: number;
   mem_percent: number;

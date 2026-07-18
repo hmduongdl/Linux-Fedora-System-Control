@@ -6,13 +6,15 @@ use std::{
 };
 use tokio::{
     process::Command as AsyncCommand,
+    sync::Mutex as AsyncMutex,
     time::{timeout, Duration},
 };
 use zbus::proxy;
 
 const POWER_PROFILE_TIMEOUT: Duration = Duration::from_secs(5);
+pub(crate) static SYSTEM_CONTROL_LOCK: AsyncMutex<()> = AsyncMutex::const_new(());
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone, Copy)]
 #[serde(rename_all = "kebab-case")]
 pub enum PowerProfile {
     PowerSaver,
@@ -90,7 +92,28 @@ pub async fn set_power_profile(
     profile: PowerProfile,
     telemetry: tauri::State<'_, crate::monitor::TelemetryEngine>,
 ) -> Result<String, String> {
-    set_power_profile_value(profile, &telemetry).await
+    let _control_guard = SYSTEM_CONTROL_LOCK
+        .try_lock()
+        .map_err(|_| "another system mode change is already running".to_owned())?;
+    let result = set_power_profile_value(profile, &telemetry).await;
+
+    // Adjust fan and battery to match power profile
+    match profile {
+        PowerProfile::PowerSaver => {
+            let _ = crate::msi_ec::set_msi_ec_fan_mode("silent".to_owned());
+            let _ = crate::msi_ec::set_msi_ec_cooler_boost(false);
+            let _ = crate::monitor::set_battery_limiter(true);
+        }
+        PowerProfile::Balanced => {
+            let _ = crate::msi_ec::set_msi_ec_fan_mode("auto".to_owned());
+            let _ = crate::msi_ec::set_msi_ec_cooler_boost(false);
+        }
+        PowerProfile::Performance => {
+            let _ = crate::monitor::set_battery_limiter(false);
+        }
+    }
+
+    result
 }
 
 pub(crate) async fn set_power_profile_value(
@@ -281,6 +304,8 @@ pub async fn toggle_gamemode() -> Result<String, String> {
             .register_game(pid)
             .await
             .map_err(|e| format!("GameMode activation rejected: {e}"))?;
+        // Turn off health mode (battery charge limit) when activating game mode
+        let _ = crate::monitor::set_battery_limiter(false);
         Ok("GameMode enabled".to_owned())
     } else {
         proxy
@@ -443,5 +468,25 @@ pub fn set_shutdown_timer(minutes: Option<u32>) -> Result<ShutdownTimerResult, S
                 message: "Scheduled shutdown cancelled".to_owned(),
             })
         }
+    }
+}
+
+#[tauri::command]
+pub fn system_power_action(action: String) -> Result<(), String> {
+    if !matches!(action.as_str(), "poweroff" | "reboot") {
+        return Err(format!("unsupported power action: {action}"));
+    }
+    let output = Command::new("systemctl")
+        .args([action.as_str(), "--no-wall"])
+        .output()
+        .map_err(|error| format!("could not {action} system: {error}"))?;
+    if output.status.success() {
+        Ok(())
+    } else {
+        Err(format!(
+            "{} rejected: {}",
+            action,
+            String::from_utf8_lossy(&output.stderr).trim()
+        ))
     }
 }

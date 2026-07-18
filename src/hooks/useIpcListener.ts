@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import { useSystemStore } from "../store/useSystemStore";
+import { dashboardFetchQueue } from "../lib/dashboardFetchQueue";
 import type { SystemTelemetry, AudioState, MediaInfo, GameFpsUpdate } from "../types/schema";
 
 type ByteStreamPayload = {
@@ -27,7 +28,9 @@ function decodeIpcPayload<T>(payload: T | ByteStreamPayload): T {
   return payload as T;
 }
 
-export function useIpcListener() {
+export type ActivePage = "dashboard" | "game" | "msi";
+
+export function useIpcListener(activePage: ActivePage) {
   const setTelemetry   = useSystemStore((s) => s.setTelemetry);
   const setAudio       = useSystemStore((s) => s.setAudio);
   const setMedia       = useSystemStore((s) => s.setMedia);
@@ -39,7 +42,6 @@ export function useIpcListener() {
 
   useEffect(() => {
     const unlisteners: UnlistenFn[] = [];
-    const intervals: ReturnType<typeof window.setInterval>[] = [];
 
     const setup = async () => {
       // ── IPC event listeners ───────────────────────────────────────
@@ -81,38 +83,52 @@ export function useIpcListener() {
         unlisteners.push(u3);
       } catch (error) { console.error("[audio-update] listener unavailable", error); }
 
-      // ── Initial data fetches ──────────────────────────────────────
-      // Do not block event registration on a slow D-Bus/sysfs command.
-      // Telemetry must keep flowing even when an optional subsystem is down.
-      void Promise.allSettled([
-        invoke<AudioState>("get_audio_state").then(setAudio),
-        invoke<MediaInfo | null>("get_media_info").then((media) => {
-          if (media) setMedia(media);
-        }),
-        fetchProcesses(),
-        fetchBattery(),
-        fetchRunningGame(),
-        fetchMsiEcState(),
-      ]).then((results) => {
-        results.forEach((result) => {
-          if (result.status === "rejected") {
-            console.error("[initial-data] unavailable", result.reason);
-          }
-        });
-      });
-
-      // ── Periodic refresh (reduced frequency to save resources) ──────────
-      intervals.push(window.setInterval(() => void fetchProcesses(), 10_000));
-      intervals.push(window.setInterval(() => void fetchBattery(), 30_000));
-      intervals.push(window.setInterval(() => void fetchRunningGame(), 15_000));
-      intervals.push(window.setInterval(() => void fetchMsiEcState(), 15_000));
     };
 
     setup();
 
     return () => {
       unlisteners.forEach((fn) => fn());
-      intervals.forEach((id) => window.clearInterval(id));
     };
-  }, [setTelemetry, setAudio, setMedia, fetchProcesses, fetchBattery, fetchRunningGame, fetchMsiEcState, setGameFps]);
+  }, [setTelemetry, setAudio, setMedia, setGameFps]);
+
+  useEffect(() => {
+    const unregisterFetches: Array<() => void> = [];
+    let initialDataFrame: number | null = null;
+
+    if (activePage === "dashboard") {
+      // Dashboard-only reads sleep as soon as another page is selected.
+      unregisterFetches.push(
+        dashboardFetchQueue.register("battery", fetchBattery, { cadenceTicks: 3, initialDelayMs: 100 }),
+        dashboardFetchQueue.register("processes", fetchProcesses, { initialDelayMs: 800 }),
+      );
+
+      // Yield one frame so the dashboard shell and skeletons paint first.
+      initialDataFrame = globalThis.requestAnimationFrame(() => {
+        dashboardFetchQueue.enqueue("initial-audio", async () => {
+          setAudio(await invoke<AudioState>("get_audio_state"));
+        });
+        dashboardFetchQueue.enqueue("initial-media", async () => {
+          const media = await invoke<MediaInfo | null>("get_media_info");
+          if (media) setMedia(media);
+        });
+      });
+    } else if (activePage === "msi") {
+      // Keep only data consumed by MSI Center awake.
+      unregisterFetches.push(
+        dashboardFetchQueue.register("battery", fetchBattery, { cadenceTicks: 3, initialDelayMs: 100 }),
+        dashboardFetchQueue.register("msi-ec", fetchMsiEcState, { initialDelayMs: 500 }),
+      );
+    } else {
+      // On Game page both Dashboard and MSI polling sleep.
+      unregisterFetches.push(
+        dashboardFetchQueue.register("running-game", fetchRunningGame, { initialDelayMs: 300 }),
+      );
+    }
+
+    return () => {
+      if (initialDataFrame !== null) globalThis.cancelAnimationFrame(initialDataFrame);
+      unregisterFetches.forEach((unregister) => unregister());
+    };
+  }, [activePage, setAudio, setMedia, fetchProcesses, fetchBattery, fetchRunningGame, fetchMsiEcState]);
 }

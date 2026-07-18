@@ -34,6 +34,29 @@ const DEFAULT_SETTINGS: AppSettings = {
 };
 
 export const PERFORMANCE_HISTORY_LIMIT = 120;
+export type OperatingMode = "work" | "game" | "silent";
+
+let systemControlInFlight: Promise<unknown> | null = null;
+let audioOutputInFlight: Promise<void> | null = null;
+const muteInFlight = new Map<number, Promise<void>>();
+const pendingVolumes = new Map<number, number>();
+const volumeWorkers = new Map<number, Promise<void>>();
+let processFetchInFlight: Promise<void> | null = null;
+let batteryFetchInFlight: Promise<void> | null = null;
+let runningGameFetchInFlight: Promise<void> | null = null;
+let msiEcFetchInFlight: Promise<void> | null = null;
+
+function runSystemControl<T>(action: () => Promise<T>): Promise<T> {
+  if (systemControlInFlight) {
+    return Promise.reject(new Error("Một thay đổi chế độ hệ thống khác đang được xử lý"));
+  }
+  const request = action();
+  systemControlInFlight = request;
+  void request.finally(() => {
+    if (systemControlInFlight === request) systemControlInFlight = null;
+  }).catch(() => undefined);
+  return request;
+}
 
 export type { PerformanceHistoryPoint, ProcessInfo, BatteryInfo, RunningGameInfo } from "../types/schema";
 
@@ -53,6 +76,7 @@ export interface SystemStore {
   battery: BatteryInfo | null;
   runningGame: RunningGameInfo | null;
   gameFps: GameFpsUpdate | null;
+  operatingMode: OperatingMode;
 
   setTelemetry: (data: SystemTelemetry) => void;
   setGameFps: (data: GameFpsUpdate) => void;
@@ -82,6 +106,7 @@ export interface SystemStore {
   fetchBattery: () => Promise<void>;
   setBatteryLimiter: (enabled: boolean) => Promise<void>;
   fetchRunningGame: () => Promise<void>;
+  setOperatingMode: (mode: OperatingMode) => Promise<string>;
   
   msiEcState: MsiEcState | null;
   fetchMsiEcState: () => Promise<void>;
@@ -113,25 +138,18 @@ export const useSystemStore = create<SystemStore>((set, get) => ({
   battery: null,
   runningGame: null,
   gameFps: null,
+  operatingMode: (localStorage.getItem("purrdora_operating_mode") as OperatingMode | null) ?? "work",
   msiEcState: null,
 
   setTelemetry: (data) => {
     set((state) => {
-      let tempSum = 0;
-      let tempCount = 0;
-      for (const core of data.cpu.cores) {
-        if (core.temperature_celsius != null) {
-          tempSum += core.temperature_celsius;
-          tempCount++;
-        }
-      }
-      for (const gpu of data.gpus) {
-        if (gpu.temperature_celsius != null) {
-          tempSum += gpu.temperature_celsius;
-          tempCount++;
-        }
-      }
-      const avgTemp = tempCount > 0 ? tempSum / tempCount : null;
+      const sensorTemperatures = data.temperatures ?? [];
+      const temperatures = sensorTemperatures.length
+        ? sensorTemperatures.map((sensor) => sensor.temperature_celsius)
+        : data.gpus.flatMap((gpu) => gpu.temperature_celsius == null ? [] : [gpu.temperature_celsius]);
+      const avgTemp = temperatures.length
+        ? temperatures.reduce((total, temperature) => total + temperature, 0) / temperatures.length
+        : null;
 
       const point: PerformanceHistoryPoint = {
         timestamp_ms: data.timestamp_ms,
@@ -191,17 +209,39 @@ export const useSystemStore = create<SystemStore>((set, get) => ({
   setGameFps: (data) => { set({ gameFps: data }); },
 
   fetchProcesses: async () => {
-    try {
-      const data = await invoke<ProcessInfo[]>("get_top_processes");
-      set({ processes: data });
-    } catch (e) { console.error("[fetchProcesses]", e); }
+    if (processFetchInFlight) return processFetchInFlight;
+    const started = performance.now();
+    const request = (async () => {
+      try {
+        const data = await invoke<ProcessInfo[]>("get_top_processes");
+        set({ processes: data });
+      } catch (e) { console.error("[fetchProcesses]", e); }
+      finally {
+        const elapsed = performance.now() - started;
+        if (elapsed >= 1_000) console.warn(`[perf] fetchProcesses took ${Math.round(elapsed)}ms`);
+      }
+    })();
+    processFetchInFlight = request;
+    try { await request; }
+    finally { if (processFetchInFlight === request) processFetchInFlight = null; }
   },
 
   fetchBattery: async () => {
-    try {
-      const data = await invoke<BatteryInfo>("get_battery");
-      set({ battery: data });
-    } catch (e) { console.error("[fetchBattery]", e); }
+    if (batteryFetchInFlight) return batteryFetchInFlight;
+    const started = performance.now();
+    const request = (async () => {
+      try {
+        const data = await invoke<BatteryInfo>("get_battery");
+        set({ battery: data });
+      } catch (e) { console.error("[fetchBattery]", e); }
+      finally {
+        const elapsed = performance.now() - started;
+        if (elapsed >= 1_000) console.warn(`[perf] fetchBattery took ${Math.round(elapsed)}ms`);
+      }
+    })();
+    batteryFetchInFlight = request;
+    try { await request; }
+    finally { if (batteryFetchInFlight === request) batteryFetchInFlight = null; }
   },
 
   setBatteryLimiter: async (enabled) => {
@@ -215,10 +255,31 @@ export const useSystemStore = create<SystemStore>((set, get) => ({
   },
 
   fetchRunningGame: async () => {
-    try {
-      const data = await invoke<RunningGameInfo | null>("get_running_game");
-      set({ runningGame: data });
-    } catch (e) { console.error("[fetchRunningGame]", e); }
+    if (runningGameFetchInFlight) return runningGameFetchInFlight;
+    const request = (async () => {
+      try {
+        const data = await invoke<RunningGameInfo | null>("get_running_game");
+        set({ runningGame: data });
+      } catch (e) { console.error("[fetchRunningGame]", e); }
+    })();
+    runningGameFetchInFlight = request;
+    try { await request; }
+    finally { if (runningGameFetchInFlight === request) runningGameFetchInFlight = null; }
+  },
+
+  setOperatingMode: async (mode) => {
+    return runSystemControl(async () => {
+      try {
+      const result = await invoke<{ mode: OperatingMode; warnings: string[] }>("set_operating_mode", { mode });
+      localStorage.setItem("purrdora_operating_mode", result.mode);
+      set({ operatingMode: result.mode });
+      await Promise.all([get().fetchMsiEcState(), get().fetchBattery()]);
+      return result.warnings.length ? result.warnings.join(" · ") : `${result.mode} mode enabled`;
+      } catch (e) {
+        console.error("[setOperatingMode]", e);
+        throw e;
+      }
+    });
   },
 
   /* ── Tauri invoke actions ── */
@@ -276,20 +337,22 @@ export const useSystemStore = create<SystemStore>((set, get) => ({
   },
 
   setPowerProfile: async (profile) => {
-    try {
-      const activeProfile = await invoke<string>("set_power_profile", { profile });
-      const name = activeProfile === "power-saver" ? "powersave" : activeProfile;
-      set((state) => ({
-        settings: {
-          ...state.settings,
-          active_profile: { ...state.settings.active_profile, name },
-        },
-      }));
-      return activeProfile;
-    } catch (e) {
-      console.error("[setPowerProfile]", e);
-      throw e;
-    }
+    return runSystemControl(async () => {
+      try {
+        const activeProfile = await invoke<string>("set_power_profile", { profile });
+        const name = activeProfile === "power-saver" ? "powersave" : activeProfile;
+        set((state) => ({
+          settings: {
+            ...state.settings,
+            active_profile: { ...state.settings.active_profile, name },
+          },
+        }));
+        return activeProfile;
+      } catch (e) {
+        console.error("[setPowerProfile]", e);
+        throw e;
+      }
+    });
   },
 
   setShutdownTimer: async (minutes) => {
@@ -311,24 +374,61 @@ export const useSystemStore = create<SystemStore>((set, get) => ({
   },
 
   setVolume: async (deviceId, volumePercent) => {
+    pendingVolumes.set(deviceId, volumePercent);
+    const running = volumeWorkers.get(deviceId);
+    if (running) return running;
+
+    const worker = (async () => {
+      while (pendingVolumes.has(deviceId)) {
+        const latestVolume = pendingVolumes.get(deviceId)!;
+        pendingVolumes.delete(deviceId);
+        try {
+          await invoke("set_audio_volume", { id: deviceId, volumePercent: latestVolume });
+        } catch (e) {
+          console.error("[setVolume]", e);
+          throw e;
+        }
+      }
+    })();
+    volumeWorkers.set(deviceId, worker);
     try {
-      await invoke("set_audio_volume", { id: deviceId, volumePercent });
-    } catch (e) {
-      console.error("[setVolume]", e);
-      throw e;
+      await worker;
+    } finally {
+      if (volumeWorkers.get(deviceId) === worker) volumeWorkers.delete(deviceId);
     }
   },
 
   toggleMute: async (deviceId) => {
+    const running = muteInFlight.get(deviceId);
+    if (running) return running;
+    const previous = get().audio;
+    if (!previous) return;
+    const toggleDevice = (device: AudioState["outputs"][number]) =>
+      device.id === deviceId ? { ...device, is_muted: !device.is_muted } : device;
+    set({
+      audio: {
+        ...previous,
+        default_sink: previous.default_sink?.id === deviceId
+          ? { ...previous.default_sink, is_muted: !previous.default_sink.is_muted }
+          : previous.default_sink,
+        outputs: previous.outputs.map(toggleDevice),
+      },
+    });
+    const request = invoke<void>("toggle_audio_mute", { id: deviceId });
+    muteInFlight.set(deviceId, request);
     try {
-      await invoke("toggle_audio_mute", { id: deviceId });
+      await request;
     } catch (e) {
+      set({ audio: previous });
       console.error("[toggleMute]", e);
       throw e;
+    } finally {
+      if (muteInFlight.get(deviceId) === request) muteInFlight.delete(deviceId);
     }
   },
 
   setAudioOutput: async (deviceId) => {
+    if (audioOutputInFlight) return audioOutputInFlight;
     const previous = get().audio;
     if (!previous) return;
     const selected = previous.outputs.find((device) => device.id === deviceId);
@@ -344,13 +444,21 @@ export const useSystemStore = create<SystemStore>((set, get) => ({
         })),
       },
     });
-    try {
+    const request = (async () => {
+      try {
       const audio = await invoke<AudioState>("set_default_audio_output", { id: deviceId });
       set({ audio });
-    } catch (e) {
-      set({ audio: previous });
-      console.error("[setAudioOutput]", e);
-      throw e;
+      } catch (e) {
+        set({ audio: previous });
+        console.error("[setAudioOutput]", e);
+        throw e;
+      }
+    })();
+    audioOutputInFlight = request;
+    try {
+      await request;
+    } finally {
+      if (audioOutputInFlight === request) audioOutputInFlight = null;
     }
   },
 
@@ -401,12 +509,18 @@ export const useSystemStore = create<SystemStore>((set, get) => ({
   },
 
   fetchMsiEcState: async () => {
-    try {
-      const data = await invoke<MsiEcState>("get_msi_ec_state");
-      set({ msiEcState: data });
-    } catch (e) {
-      console.error("[fetchMsiEcState]", e);
-    }
+    if (msiEcFetchInFlight) return msiEcFetchInFlight;
+    const request = (async () => {
+      try {
+        const data = await invoke<MsiEcState>("get_msi_ec_state");
+        set({ msiEcState: data });
+      } catch (e) {
+        console.error("[fetchMsiEcState]", e);
+      }
+    })();
+    msiEcFetchInFlight = request;
+    try { await request; }
+    finally { if (msiEcFetchInFlight === request) msiEcFetchInFlight = null; }
   },
 
   setMsiEcCoolerBoost: async (enabled) => {

@@ -3,6 +3,8 @@ import {
   BatteryFull,
   BatteryLow,
   BatteryMedium,
+  CalendarDays,
+  Clock3,
   Folder,
   Gamepad2,
   Globe,
@@ -12,9 +14,10 @@ import {
   Minimize2,
   Settings2,
   Terminal,
-  Zap,
+  Wifi,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useSystemStore } from "../store/useSystemStore";
 
@@ -52,14 +55,71 @@ export function BottomDock({
     observer.observe(dock);
     return () => observer.disconnect();
   }, []);
-  const active  = useSystemStore((s) => s.controls.is_gamemode_active);
-  const toggle  = useSystemStore((s) => s.toggleGamemode);
   const latency = useSystemStore(
     (s) => s.telemetry?.network.latency_ms?.toFixed(0) ?? "—"
   );
   const battery = useSystemStore((s) => s.battery);
 
-  const gameFps = useSystemStore((s) => s.gameFps);
+  const [now, setNow] = useState(() => new Date());
+  const [network, setNetwork] = useState({ ip: "—", isVietnam: false });
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 1_000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 5_000);
+    const vietnamTimeZone = ["Asia/Ho_Chi_Minh", "Asia/Saigon"].includes(
+      Intl.DateTimeFormat().resolvedOptions().timeZone,
+    );
+
+    const loadNetwork = async () => {
+      try {
+        const response = await fetch("https://ipwho.is/", { signal: controller.signal });
+        const data = await response.json() as { success?: boolean; ip?: string; country_code?: string };
+        if (!cancelled && data.success !== false && data.ip) {
+          setNetwork({
+            ip: data.ip,
+            isVietnam: data.country_code?.toUpperCase() === "VN" || vietnamTimeZone,
+          });
+          return;
+        }
+      } catch {
+        // Public IP lookup is optional; use the active local interface below.
+      }
+
+      try {
+        const ip = await invoke<string | null>("get_local_ip");
+        if (!cancelled) setNetwork({ ip: ip ?? "—", isVietnam: vietnamTimeZone });
+      } catch {
+        // Keep the neutral placeholder when there is no active network.
+      }
+    };
+
+    void loadNetwork();
+    return () => {
+      cancelled = true;
+      controller.abort();
+      window.clearTimeout(timeout);
+    };
+  }, []);
+
+  const vietnamDate = new Intl.DateTimeFormat("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(now);
+  const vietnamTime = new Intl.DateTimeFormat("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).format(now);
 
   const [isFullscreen, setIsFullscreen] = useState(false);
   useEffect(() => {
@@ -79,7 +139,7 @@ export function BottomDock({
   };
 
   return (
-    <div ref={dockRef} className="fixed inset-x-4 bottom-4 z-[100] mx-auto w-auto max-w-[1200px] overflow-hidden">
+    <div ref={dockRef} className="fixed inset-x-4 bottom-4 z-[100] mx-auto w-auto overflow-hidden">
       <div className="glass-panel flex min-w-0 items-center justify-between bg-black/60 backdrop-blur-2xl rounded-2xl p-2.5 border-white/10 shadow-2xl">
         {/* Nav icon buttons */}
         <div className="flex min-w-0 items-center gap-1">
@@ -110,46 +170,26 @@ export function BottomDock({
 
         {/* Status badges */}
         <div className="flex items-center gap-4 h-10 rounded-xl border border-white/5 bg-black/40 px-4">
-          {/* Game Mode toggle */}
-          <button
-            onClick={() => void toggle()}
-            className={`flex items-center gap-1.5 transition-colors ${
-              active ? "text-emerald-400" : "text-slate-500"
-            }`}
-            title="Toggle GameMode"
-          >
-            <Gamepad2 size={14} />
-            <span className="text-[10px] font-bold uppercase tracking-tight">
-              Game Mode
-            </span>
-          </button>
+          <div className="flex items-center gap-1.5 text-slate-300" title="Ngày tại Việt Nam (GMT+7)">
+            <CalendarDays size={13} className="text-cyan-accent" />
+            <span className="font-mono text-[10px] font-semibold">{vietnamDate}</span>
+          </div>
 
           <div className="h-4 w-px bg-white/10" />
 
-          {/* FPS */}
-          {gameFps && gameFps.fps !== null ? (
-            <div className="flex items-center gap-2">
-              <div className="flex items-baseline gap-0.5">
-                <Zap size={12} className="text-cyan-accent" />
-                <span className="font-mono text-xs font-bold text-cyan-accent">
-                  {gameFps.fps.toFixed(0)}
-                </span>
-                <span className="text-[8px] uppercase text-on-surface-variant">FPS</span>
-              </div>
-              <div className="h-3 w-px bg-white/10" />
-              <div className="flex items-baseline gap-0.5">
-                <span className="font-mono text-[9px] text-primary">
-                  {gameFps.frametime_ms != null ? gameFps.frametime_ms.toFixed(1) : "—"}
-                </span>
-                <span className="text-[7px] uppercase text-on-surface-variant">ms</span>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1.5 text-slate-500" title="No active MangoHud logging detected">
-              <Zap size={12} className="text-slate-600" />
-              <span className="text-[9px] font-bold uppercase tracking-tight">No game running</span>
-            </div>
-          )}
+          <div className="flex items-center gap-1.5" title="Giờ Việt Nam (GMT+7)">
+            <Clock3 size={13} className="text-pink-accent" />
+            <span className="font-mono text-[10px] font-bold text-slate-200">{vietnamTime}</span>
+            <span className="text-[7px] uppercase text-slate-500">GMT+7</span>
+          </div>
+
+          <div className="h-4 w-px bg-white/10" />
+
+          <div className="flex items-center gap-1.5" title="IP của mạng hiện tại">
+            <Wifi size={13} className="text-emerald-400" />
+            <span className="font-mono text-[10px] font-semibold text-slate-300">{network.ip}</span>
+            {network.isVietnam && <span aria-label="Việt Nam" title="Việt Nam">🇻🇳</span>}
+          </div>
 
           {/* Latency */}
           <div className="flex items-baseline gap-0.5">

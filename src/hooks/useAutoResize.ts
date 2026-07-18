@@ -3,7 +3,6 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { PhysicalSize } from "@tauri-apps/api/dpi";
 
 const GROW_STEP = 20;
-const MAX_GROWS = 10;
 
 /**
  * Monitors a scrollable container and grows the window when content
@@ -13,7 +12,7 @@ export function useAutoResize(
   containerRef: RefObject<HTMLElement | null>,
   active: boolean,
 ) {
-  const grows = useRef(0);
+  const hasResized = useRef(false);
 
   useEffect(() => {
     if (!active) return;
@@ -23,11 +22,14 @@ export function useAutoResize(
     let timer: ReturnType<typeof setTimeout> | null = null;
 
     const check = () => {
-      if (grows.current >= MAX_GROWS) return;
+      // A resize triggers ResizeObserver again. Only perform one corrective
+      // resize per mount; repeated setSize calls can starve WebKitGTK's UI
+      // event loop and make the native window appear unresponsive.
+      if (hasResized.current) return;
       const overflow = container.scrollHeight - container.clientHeight;
       if (overflow <= 0) return;
 
-      grows.current += 1;
+      hasResized.current = true;
       const win = getCurrentWindow();
       win.innerSize().then((size) => {
         win.setSize(

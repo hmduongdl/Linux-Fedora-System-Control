@@ -303,11 +303,17 @@ pub async fn get_audio_state() -> Result<AudioState, AudioError> {
 pub fn start(ipc: crate::ipc::IpcEmitter) {
     tauri::async_runtime::spawn(async move {
         let mut interval = tokio::time::interval(Duration::from_secs(3));
+        interval.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
         loop {
             interval.tick().await;
+            let started = std::time::Instant::now();
             match get_audio_state().await {
                 Ok(state) => {
                     let _ = ipc.emit_latest("audio-update", &state);
+                    let elapsed = started.elapsed();
+                    if elapsed >= Duration::from_millis(250) {
+                        log::warn!("[perf] get_audio_state took {}ms", elapsed.as_millis());
+                    }
                 }
                 Err(error) => log::warn!("Audio state unavailable: {error}"),
             }
