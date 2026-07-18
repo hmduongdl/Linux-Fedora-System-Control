@@ -56,12 +56,14 @@ export interface NetworkHistoryPoint {
   latency_ms: number | null;
 }
 
-/** Derived client-side samples from CPU/RAM/ping fields in `system-tick`. */
+/** Derived client-side samples from CPU/RAM/ping/fps fields in `system-tick`. */
 export interface PerformanceHistoryPoint {
   timestamp_ms: number;
   cpu_percent: number;
   ram_percent: number;
   latency_ms: number | null;
+  fps: number | null;
+  avg_temp: number | null;
 }
 
 export interface SystemTelemetry {
@@ -69,8 +71,20 @@ export interface SystemTelemetry {
   cpu: CpuMetrics;
   gpus: GpuMetrics[];
   ram: RamMetrics;
+  storage: StorageMetrics;
+  storage_mounts: StorageMetrics[];
   network: NetworkMetrics;
   session: SessionMetrics;
+  /** Frames-per-second sampled from DRM vblank counters, or display refresh rate as fallback. */
+  fps: number | null;
+}
+
+export interface StorageMetrics {
+  mount_point: string;
+  total_gb: number;
+  used_gb: number;
+  available_gb: number;
+  usage_percent: number;
 }
 
 export interface SessionMetrics {
@@ -78,6 +92,7 @@ export interface SessionMetrics {
   dashboard_runtime_seconds: number;
   active_output: string | null;
   profile_switches: number;
+  kernel_version: string;
 }
 
 /** ── Audio State (PipeWire / WirePlumber Mixer) ── */
@@ -192,4 +207,67 @@ export interface ShutdownTimerResult {
   active: boolean;
   minutes: number | null;
   message: string;
+}
+
+/** Matches Rust `ProcessInfo` returned by `get_top_processes`. */
+export interface ProcessInfo {
+  pid: number;
+  name: string;
+  cpu_percent: number;
+  mem_mb: number;
+  mem_percent: number;
+}
+
+/** Matches Rust `BatteryInfo` returned by `get_battery`. */
+export interface BatteryInfo {
+  percent: number;
+  charging: boolean;
+  present: boolean;
+  status: string;
+  estimated_runtime_minutes: number | null;
+  charge_limit_percent: number | null;
+  health_mode: boolean;
+  health_percent: number | null;
+}
+
+/** Matches Rust `RunningGameInfo` returned by `get_running_game`. */
+export interface RunningGameInfo {
+  name: string;
+  pid: number;
+  cpu_percent: number;
+  mem_mb: number;
+}
+
+export interface MsiEcState {
+  is_supported: boolean;
+  cooler_boost: boolean;
+  fan_mode: string;
+  available_fan_modes: string[];
+  shift_mode: string;
+  available_shift_modes: string[];
+  super_battery: boolean;
+  webcam: boolean;
+  win_key: string;
+  fn_key: string;
+  kbd_backlight: number;
+  kbd_backlight_max: number;
+  cpu_fan_speed: number;
+  cpu_temp: number;
+  gpu_fan_speed: number;
+  gpu_temp: number;
+  acpi_thermal_temp: number;
+  fw_version: string;
+  fw_release_date: string;
+}
+
+export interface GameFpsUpdate {
+  fps: number | null;
+  frametime_ms: number | null;
+  timestamp: number;
+}
+
+export interface GameSession {
+  filename: string;
+  start_time_ms: number;
+  average_fps: number | null;
 }

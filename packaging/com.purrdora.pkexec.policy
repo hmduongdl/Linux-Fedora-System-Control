@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC
+ "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1/policy.dtd">
+<policyconfig>
+
+  <vendor>Purrdora</vendor>
+  <vendor_url>https://github.com/hoangminhduong/Linux-Fedora-System-Control</vendor_url>
+
+  <action id="com.purrdora.setfanmode">
+    <description>Set MSI EC fan mode</description>
+    <message>Authentication is required to set the MSI fan mode.</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/purrdora-helper</annotate>
+    <annotate key="org.freedesktop.policykit.exec.argv1">set-fan-mode</annotate>
+  </action>
+
+  <action id="com.purrdora.setshiftmode">
+    <description>Set MSI EC shift mode</description>
+    <message>Authentication is required to set the MSI performance profile.</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/purrdora-helper</annotate>
+    <annotate key="org.freedesktop.policykit.exec.argv1">set-shift-mode</annotate>
+  </action>
+
+  <action id="com.purrdora.setcoolerboost">
+    <description>Set MSI EC cooler boost</description>
+    <message>Authentication is required to toggle MSI cooler boost.</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/purrdora-helper</annotate>
+    <annotate key="org.freedesktop.policykit.exec.argv1">set-cooler-boost</annotate>
+  </action>
+
+  <action id="com.purrdora.setsuperbattery">
+    <description>Set MSI EC super battery</description>
+    <message>Authentication is required to toggle MSI super battery.</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/purrdora-helper</annotate>
+    <annotate key="org.freedesktop.policykit.exec.argv1">set-super-battery</annotate>
+  </action>
+
+  <action id="com.purrdora.setwebcam">
+    <description>Set MSI EC webcam</description>
+    <message>Authentication is required to toggle webcam.</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/purrdora-helper</annotate>
+    <annotate key="org.freedesktop.policykit.exec.argv1">set-webcam</annotate>
+  </action>
+
+  <action id="com.purrdora.setwinkey">
+    <description>Set MSI EC Windows key</description>
+    <message>Authentication is required to toggle Windows key.</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/purrdora-helper</annotate>
+    <annotate key="org.freedesktop.policykit.exec.argv1">set-win-key</annotate>
+  </action>
+
+  <action id="com.purrdora.setfnkey">
+    <description>Set MSI EC Fn key</description>
+    <message>Authentication is required to toggle Fn key.</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/purrdora-helper</annotate>
+    <annotate key="org.freedesktop.policykit.exec.argv1">set-fn-key</annotate>
+  </action>
+
+  <action id="com.purrdora.setkbdbacklight">
+    <description>Set MSI EC keyboard backlight</description>
+    <message>Authentication is required to adjust keyboard backlight.</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/purrdora-helper</annotate>
+    <annotate key="org.freedesktop.policykit.exec.argv1">set-kbd-backlight</annotate>
+  </action>
+
+  <action id="com.purrdora.setbatterylimit">
+    <description>Set battery limit threshold</description>
+    <message>Authentication is required to set the battery charge threshold limit.</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/purrdora-helper</annotate>
+    <annotate key="org.freedesktop.policykit.exec.argv1">set-battery-limit</annotate>
+  </action>
+
+  <action id="com.purrdora.setpowerprofile">
+    <description>Set system power profile</description>
+    <message>Authentication is required to set the system power profile.</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/purrdora-helper</annotate>
+    <annotate key="org.freedesktop.policykit.exec.argv1">set-power-profile</annotate>
+  </action>
+
+  <action id="com.purrdora.dropcaches">
+    <description>Drop RAM caches</description>
+    <message>Authentication is required to drop RAM caches.</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/purrdora-helper</annotate>
+    <annotate key="org.freedesktop.policykit.exec.argv1">drop-caches</annotate>
+  </action>
+
+  <action id="com.purrdora.cleandiskcache">
+    <description>Clean DNF disk cache</description>
+    <message>Authentication is required to clean DNF disk cache.</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/purrdora-helper</annotate>
+    <annotate key="org.freedesktop.policykit.exec.argv1">clean-disk-cache</annotate>
+  </action>
+
+</policyconfig>

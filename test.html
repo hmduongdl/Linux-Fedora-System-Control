@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Purrdora OS - System HUD</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Geist:wght@400;500;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --cyan: #22d3ee;
+            --pink: #ec4899;
+            --bg-dark: #0a0a0f;
+            --panel-bg: #15151e;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+            vertical-align: middle;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #e4e1e9;
+        }
+
+        .glass-panel {
+            background: var(--panel-bg);
+            border: 1px solid rgba(139, 92, 246, 0.15);
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.05);
+            border-radius: 10px;
+        }
+
+        .header-small-caps {
+            font-variant: small-caps;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.2);
+            border-radius: 10px;
+        }
+
+        .big-number {
+            font-family: 'Geist', sans-serif;
+            font-weight: 700;
+        }
+
+        .glow-cyan {
+            text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
+        }
+
+        .glow-pink {
+            text-shadow: 0 0 8px rgba(236, 72, 153, 0.4);
+        }
+
+        .glow-purple {
+            text-shadow: 0 0 8px rgba(139, 92, 246, 0.4);
+        }
+
+        .progress-cyan {
+            background: var(--cyan);
+        }
+
+        .progress-purple {
+            background: var(--primary);
+        }
+
+        .progress-pink {
+            background: var(--pink);
+        }
+    </style>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#8b5cf6",
+                        "cyan-accent": "#22d3ee",
+                        "pink-accent": "#ec4899",
+                        "surface": "#15151e",
+                        "surface-low": "#111118",
+                        "on-surface": "#e4e1e9",
+                        "on-surface-variant": "#94a3b8"
+                    },
+                    fontFamily: {
+                        "sans": ["Plus Jakarta Sans", "sans-serif"],
+                        "mono": ["Geist", "monospace"]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="font-sans min-h-screen flex flex-col overflow-hidden selection:bg-primary/30">
+    <!-- Top Window Bar -->
+    <header
+        class="flex justify-between items-center w-full px-4 h-10 border-b border-white/5 bg-black/40 backdrop-blur-md shrink-0 z-50">
+        <div class="flex items-center gap-2">
+            <div class="flex space-x-1.5">
+                <div class="w-3 h-3 rounded-full bg-[#ff5f56]"></div>
+                <div class="w-3 h-3 rounded-full bg-[#ffbd2e]"></div>
+                <div class="w-3 h-3 rounded-full bg-[#27c93f]"></div>
+            </div>
+        </div>
+        <div class="absolute left-1/2 -translate-x-1/2">
+            <h1 class="text-xs font-bold tracking-[0.2em] uppercase text-on-surface/80">Purrdora</h1>
+        </div>
+        <div class="flex items-center gap-4 text-on-surface-variant">
+            <button class="hover:text-primary transition-colors"><span
+                    class="material-symbols-outlined text-[18px]">refresh</span></button>
+            <button class="hover:text-primary transition-colors"><span
+                    class="material-symbols-outlined text-[18px]">screenshot_region</span></button>
+            <button class="hover:text-primary transition-colors"><span
+                    class="material-symbols-outlined text-[18px]">settings</span></button>
+        </div>
+    </header>
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-6 pb-24 custom-scrollbar">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-[1700px] mx-auto">
+            <!-- Column 1: Media & Game Env -->
+            <div class="space-y-6">
+                <!-- ĐANG PHÁT -->
+                <section class="glass-panel p-4">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="material-symbols-outlined text-primary text-sm">music_note</span>
+                        <h3 class="header-small-caps text-[11px] text-primary">ĐANG PHÁT</h3>
+                    </div>
+                    <div class="flex gap-4 mb-4">
+                        <div class="w-16 h-16 rounded overflow-hidden border border-white/5 shrink-0 shadow-lg">
+                            <img class="w-full h-full object-cover"
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuChNU_LXEC8eW2l1f2a7gY-xp31-m0xlCTJtKQqMqmrlS2pR2zyoFQJpFQ8MbXObAUNxZyPdGUuBJM8-Ud9jy3YWEj82tX2LJHiAAaDxH048H3qGTsUFe3eWGUeWhaNt_h-1Qz02HX9EeWK6O2nkhXQgV-eD-mkOON1SmPd7Sdf5vSYRSa97gFZszJ_AQkpmAnJG43PAf_mfp5bEcRzGPIu8wmrw9weTkHFqlQ4AaxGth-z4J-wRHDSeoXUx-SoYbfl6SRHw4g7b-c" />
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-bold truncate">Xuyên Không Thành Phế Tử</p>
+                            <p class="text-[11px] text-on-surface-variant truncate">Cận Phước Audio</p>
+                            <div class="mt-3 h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                                <div class="h-full bg-primary w-[35%]"></div>
+                            </div>
+                            <div class="flex justify-between text-[9px] text-on-surface-variant mt-1 font-mono">
+                                <span>01:12</span>
+                                <span>03:42</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-center items-center gap-6 pt-2">
+                        <button class="text-on-surface-variant hover:text-on-surface"><span
+                                class="material-symbols-outlined text-xl">skip_previous</span></button>
+                        <button
+                            class="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-primary/20 transition-all"><span
+                                class="material-symbols-outlined text-xl">pause</span></button>
+                        <button class="text-on-surface-variant hover:text-on-surface"><span
+                                class="material-symbols-outlined text-xl">skip_next</span></button>
+                    </div>
+                </section>
+                <!-- TRẠNG THÁI GAME -->
+                <section class="glass-panel p-4">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="material-symbols-outlined text-emerald-400 text-sm">sports_esports</span>
+                        <h3 class="header-small-caps text-[11px] text-emerald-400">TRẠNG THÁI GAME</h3>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between p-2.5 rounded bg-black/20 border border-white/5">
+                            <span class="text-[11px] text-on-surface-variant">Cửa sổ hiện tại</span>
+                            <span class="text-[11px] font-bold text-primary">Pal</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2.5 rounded bg-black/20 border border-white/5">
+                            <span class="text-[11px] text-on-surface-variant">Màn hình hiển thị</span>
+                            <span class="text-[11px] font-bold text-primary">HDMI-A-1 • WS 6</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mt-2">
+                            <button
+                                class="py-2 rounded bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold uppercase tracking-wider">BẬT
+                                MIC</button>
+                            <button
+                                class="py-2 rounded bg-white/5 border border-white/10 text-on-surface-variant text-[10px] font-bold uppercase tracking-wider">MUTE</button>
+                        </div>
+                    </div>
+                </section>
+                <!-- AUDIO / MIXER -->
+                <section class="glass-panel p-4">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="material-symbols-outlined text-cyan-accent text-sm">tune</span>
+                        <h3 class="header-small-caps text-[11px] text-cyan-accent">AUDIO / MIXER</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <p class="text-[10px] text-on-surface-variant font-bold uppercase">Thiết bị: XOX KX25</p>
+                            <span class="material-symbols-outlined text-sm text-emerald-400">volume_up</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="flex-1 h-1.5 bg-black/30 rounded-full overflow-hidden relative">
+                                <div class="absolute inset-y-0 left-0 bg-cyan-accent w-[45%]"></div>
+                            </div>
+                            <span class="text-[10px] font-mono font-bold w-8 text-right">45%</span>
+                        </div>
+                        <div class="pt-2 border-t border-white/5">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-[9px] text-on-surface-variant uppercase">Mic Level</span>
+                                <div class="flex gap-0.5 h-2">
+                                    <div class="w-0.5 bg-cyan-accent h-full"></div>
+                                    <div class="w-0.5 bg-cyan-accent h-[70%] mt-auto"></div>
+                                    <div class="w-0.5 bg-cyan-accent h-[90%] mt-auto"></div>
+                                    <div class="w-0.5 bg-cyan-accent h-[40%] mt-auto"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <!-- Column 2: Performance Stats -->
+            <div class="space-y-6">
+                <!-- CHỈ SỐ HỆ THỐNG -->
+                <section class="glass-panel p-4">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="material-symbols-outlined text-cyan-accent text-sm">analytics</span>
+                        <h3 class="header-small-caps text-[11px] text-cyan-accent">CHỈ SỐ HỆ THỐNG</h3>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mb-5">
+                        <div class="bg-black/20 p-3 rounded-lg border border-white/5">
+                            <p class="text-[9px] text-on-surface-variant uppercase mb-1">FPS HIỆN TẠI</p>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-2xl big-number glow-cyan text-cyan-accent">91</span>
+                                <span class="text-[10px] text-cyan-accent/60">FPS</span>
+                            </div>
+                            <svg class="w-full h-8 mt-2 stroke-cyan-accent/40 fill-none" viewbox="0 0 100 20">
+                                <path d="M0 15 Q 10 5, 20 12 T 40 10 T 60 14 T 80 8 T 100 12" stroke-width="1.5"></path>
+                            </svg>
+                        </div>
+                        <div class="bg-black/20 p-3 rounded-lg border border-white/5">
+                            <p class="text-[9px] text-on-surface-variant uppercase mb-1">ĐỘ TRỄ MẠNG</p>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-2xl big-number glow-purple text-primary">30</span>
+                                <span class="text-[10px] text-primary/60">MS</span>
+                            </div>
+                            <svg class="w-full h-8 mt-2 stroke-primary/40 fill-none" viewbox="0 0 100 20">
+                                <path d="M0 10 L 20 12 L 40 10 L 60 11 L 80 9 L 100 10" stroke-width="1"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-[10px] font-bold">
+                                <span class="text-cyan-accent">GPU</span>
+                                <span>39%</span>
+                            </div>
+                            <div class="h-1.5 w-full bg-black/30 rounded-full overflow-hidden">
+                                <div class="h-full progress-cyan w-[39%]"></div>
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-[10px] font-bold">
+                                <span class="text-primary">CPU</span>
+                                <span>18%</span>
+                            </div>
+                            <div class="h-1.5 w-full bg-black/30 rounded-full overflow-hidden">
+                                <div class="h-full progress-purple w-[18%]"></div>
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-[10px] font-bold">
+                                <span class="text-pink-accent">RAM</span>
+                                <span>50% <span class="text-[9px] font-normal text-on-surface-variant ml-1">(7.6 / 15.3
+                                        GB)</span></span>
+                            </div>
+                            <div class="h-1.5 w-full bg-black/30 rounded-full overflow-hidden">
+                                <div class="h-full progress-pink w-[50%]"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- THÔNG SỐ PHẦN CỨNG -->
+                <section class="glass-panel p-4">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="material-symbols-outlined text-on-surface-variant text-sm">memory</span>
+                        <h3 class="header-small-caps text-[11px] text-on-surface-variant">THÔNG SỐ PHẦN CỨNG</h3>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="bg-black/20 p-2.5 rounded border border-white/5 text-center">
+                            <p class="text-[8px] text-on-surface-variant uppercase mb-1">Clock</p>
+                            <p class="text-xs font-bold font-mono text-cyan-accent">4.8 GHz</p>
+                        </div>
+                        <div class="bg-black/20 p-2.5 rounded border border-white/5 text-center">
+                            <p class="text-[8px] text-on-surface-variant uppercase mb-1">Temp</p>
+                            <p class="text-xs font-bold font-mono text-pink-accent">42 °C</p>
+                        </div>
+                        <div class="bg-black/20 p-2.5 rounded border border-white/5 text-center">
+                            <p class="text-[8px] text-on-surface-variant uppercase mb-1">Cores</p>
+                            <p class="text-xs font-bold font-mono text-primary">12 Cores</p>
+                        </div>
+                    </div>
+                </section>
+                <!-- LỊCH SỬ HIỆU NĂNG -->
+                <section class="glass-panel p-4">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="material-symbols-outlined text-primary text-sm">show_chart</span>
+                        <h3 class="header-small-caps text-[11px] text-primary">LỊCH SỬ HIỆU NĂNG (120S)</h3>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="flex-1 h-24 bg-black/40 rounded border border-white/5 relative overflow-hidden">
+                            <!-- SVG Chart Placeholder -->
+                            <svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 100 100">
+                                <path d="M0 80 Q 25 70, 50 75 T 100 60" fill="none" opacity="0.6" stroke="#22d3ee"
+                                    stroke-width="1"></path>
+                                <path d="M0 90 Q 25 85, 50 88 T 100 82" fill="none" opacity="0.6" stroke="#ec4899"
+                                    stroke-width="1"></path>
+                                <path d="M0 60 Q 25 55, 50 58 T 100 52" fill="none" opacity="0.6" stroke="#8b5cf6"
+                                    stroke-width="1"></path>
+                            </svg>
+                        </div>
+                        <div class="w-24 text-[9px] font-mono">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="text-on-surface-variant border-b border-white/10">
+                                        <th class="text-left py-1">Metric</th>
+                                        <th class="text-right py-1">Max</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="text-cyan-accent py-1">CPU</td>
+                                        <td class="text-right py-1">42%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-pink-accent py-1">RAM</td>
+                                        <td class="text-right py-1">54%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-primary py-1">Ping</td>
+                                        <td class="text-right py-1">120</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <!-- Column 3: Controls & Processes -->
+            <div class="space-y-6">
+                <!-- CÔNG CỤ PHIÊN -->
+                <section class="glass-panel p-4">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="material-symbols-outlined text-primary text-sm">timer</span>
+                        <h3 class="header-small-caps text-[11px] text-primary">CÔNG CỤ PHIÊN</h3>
+                    </div>
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-lg">
+                            <p class="text-[9px] text-primary/60 uppercase font-bold">Tổng thời gian</p>
+                            <p class="text-xl big-number text-primary">00:03:42</p>
+                        </div>
+                        <button
+                            class="px-4 py-2 rounded bg-primary text-black font-bold text-[10px] uppercase hover:bg-primary/80 transition-all">FOCUS</button>
+                    </div>
+                    <div class="space-y-2 mb-4">
+                        <div class="flex items-center gap-3 p-2 bg-black/20 rounded">
+                            <span class="material-symbols-outlined text-primary text-[18px]">notifications_off</span>
+                            <div>
+                                <p class="text-[10px] font-bold">Không làm phiền</p>
+                                <p class="text-[8px] text-on-surface-variant">Ẩn tất cả thông báo hệ thống</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-2 bg-black/20 rounded">
+                            <span class="material-symbols-outlined text-primary text-[18px]">coffee</span>
+                            <div>
+                                <p class="text-[10px] font-bold">Chống ngủ</p>
+                                <p class="text-[8px] text-on-surface-variant">Giữ màn hình luôn bật</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button
+                            class="py-2 bg-white/5 border border-white/10 rounded text-[10px] hover:border-primary/50 transition-colors">1H</button>
+                        <button
+                            class="py-2 bg-primary/20 border border-primary/50 text-primary rounded text-[10px] font-bold">2H</button>
+                        <button
+                            class="py-2 bg-white/5 border border-white/10 rounded text-[10px] hover:border-primary/50 transition-colors">4H</button>
+                        <button
+                            class="py-2 bg-white/5 border border-white/10 rounded text-[10px] hover:border-primary/50 transition-colors">6H</button>
+                    </div>
+                </section>
+                <!-- TRÒ CHƠI ĐANG CHẠY -->
+                <section class="glass-panel p-4 border-pink-accent/20">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="material-symbols-outlined text-pink-accent text-sm">stadia_controller</span>
+                        <h3 class="header-small-caps text-[11px] text-pink-accent">TRÒ CHƠI ĐANG CHẠY</h3>
+                    </div>
+                    <div class="flex gap-4">
+                        <div
+                            class="w-12 h-12 rounded-lg bg-black/30 border border-white/5 flex items-center justify-center shrink-0">
+                            <span
+                                class="material-symbols-outlined text-pink-accent text-2xl">local_fire_department</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-bold">Palworld</p>
+                            <p class="text-[10px] text-on-surface-variant font-mono">steam_app_1423730</p>
+                            <div class="grid grid-cols-2 gap-2 mt-3">
+                                <div class="bg-black/30 p-2 rounded border border-white/5">
+                                    <p class="text-[8px] text-on-surface-variant uppercase">Xung GPU</p>
+                                    <p class="text-[10px] font-bold font-mono">1835 MHz</p>
+                                </div>
+                                <div class="bg-black/30 p-2 rounded border border-white/5">
+                                    <p class="text-[8px] text-on-surface-variant uppercase">VRAM</p>
+                                    <p class="text-[10px] font-bold font-mono">2.3/8.0 GB</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- TIẾN TRÌNH HÀNG ĐẦU -->
+                <section class="glass-panel p-4">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="material-symbols-outlined text-on-surface-variant text-sm">list_alt</span>
+                        <h3 class="header-small-caps text-[11px] text-on-surface-variant uppercase">TIẾN TRÌNH HÀNG ĐẦU
+                        </h3>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between text-[10px]">
+                            <span class="w-20 truncate font-medium">palworld-win64</span>
+                            <div class="flex gap-4">
+                                <div class="w-16">
+                                    <div class="h-1 bg-black/30 rounded-full">
+                                        <div class="h-full bg-cyan-accent w-[30%]"></div>
+                                    </div>
+                                </div>
+                                <span class="w-8 text-right font-mono">12.4%</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between text-[10px]">
+                            <span class="w-20 truncate font-medium">discord.exe</span>
+                            <div class="flex gap-4">
+                                <div class="w-16">
+                                    <div class="h-1 bg-black/30 rounded-full">
+                                        <div class="h-full bg-primary w-[15%]"></div>
+                                    </div>
+                                </div>
+                                <span class="w-8 text-right font-mono">4.2%</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between text-[10px]">
+                            <span class="w-20 truncate font-medium">chrome.exe</span>
+                            <div class="flex gap-4">
+                                <div class="w-16">
+                                    <div class="h-1 bg-black/30 rounded-full">
+                                        <div class="h-full bg-primary w-[8%]"></div>
+                                    </div>
+                                </div>
+                                <span class="w-8 text-right font-mono">2.1%</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between text-[10px]">
+                            <span class="w-20 truncate font-medium">steam.exe</span>
+                            <div class="flex gap-4">
+                                <div class="w-16">
+                                    <div class="h-1 bg-black/30 rounded-full">
+                                        <div class="h-full bg-primary w-[5%]"></div>
+                                    </div>
+                                </div>
+                                <span class="w-8 text-right font-mono">1.1%</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+    <!-- Fixed Bottom Dock -->
+    <div class="fixed bottom-4 left-1/2 -translate-x-1/2 w-[95%] max-w-[1200px] z-[100]">
+        <div
+            class="glass-panel bg-black/60 backdrop-blur-2xl rounded-2xl p-2.5 flex items-center justify-between border-white/10 shadow-2xl">
+            <div class="flex items-center gap-1">
+                <button
+                    class="w-10 h-10 flex items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/30"><span
+                        class="material-symbols-outlined">home</span></button>
+                <button
+                    class="w-10 h-10 flex items-center justify-center rounded-xl text-on-surface-variant hover:bg-white/5 transition-all"><span
+                        class="material-symbols-outlined">language</span></button>
+                <button
+                    class="w-10 h-10 flex items-center justify-center rounded-xl text-on-surface-variant hover:bg-white/5 transition-all"><span
+                        class="material-symbols-outlined">terminal</span></button>
+                <button
+                    class="w-10 h-10 flex items-center justify-center rounded-xl text-on-surface-variant hover:bg-white/5 transition-all"><span
+                        class="material-symbols-outlined">chat_bubble</span></button>
+                <button
+                    class="w-10 h-10 flex items-center justify-center rounded-xl text-on-surface-variant hover:bg-white/5 transition-all"><span
+                        class="material-symbols-outlined">folder</span></button>
+            </div>
+            <div class="flex items-center gap-4 px-4 h-10 bg-black/40 rounded-xl border border-white/5">
+                <div class="flex items-center gap-1.5 text-emerald-400">
+                    <span class="material-symbols-outlined text-[16px]">bolt</span>
+                    <span class="text-[10px] font-bold uppercase tracking-tight">Game Mode</span>
+                </div>
+                <div class="h-4 w-px bg-white/10"></div>
+                <div class="flex items-baseline gap-1">
+                    <span class="text-xs font-mono font-bold text-cyan-accent">91</span>
+                    <span class="text-[8px] text-on-surface-variant uppercase">FPS</span>
+                </div>
+                <div class="flex items-baseline gap-1">
+                    <span class="text-xs font-mono font-bold text-primary">30</span>
+                    <span class="text-[8px] text-on-surface-variant uppercase">MS</span>
+                </div>
+                <div class="flex items-center gap-1 text-pink-accent">
+                    <span class="material-symbols-outlined text-[16px]">battery_5_bar</span>
+                    <span class="text-[10px] font-mono font-bold">84%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Footer Strip -->
+    <footer class="h-7 bg-black border-t border-white/5 flex items-center justify-between px-6 shrink-0 z-10">
+        <div class="flex items-center gap-6">
+            <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.5)]"></span>
+                <span class="text-[9px] text-on-surface-variant/70 font-mono uppercase">Kernel 6.2.0-generic</span>
+            </div>
+            <span class="text-[9px] text-on-surface-variant/70 font-mono uppercase tracking-wider">localhost:8080</span>
+        </div>
+        <div class="flex items-center gap-6 font-mono text-[9px] text-on-surface-variant/70">
+            <span class="flex items-center gap-1"><span class="text-pink-accent/80">TEMP:</span> 42°C</span>
+            <span class="flex items-center gap-1"><span class="text-cyan-accent/80">FAN:</span> 1200 RPM</span>
+        </div>
+    </footer>
+</body>
+
+</html>

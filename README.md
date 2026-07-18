@@ -1,102 +1,136 @@
-# <picture><source media="(prefers-color-scheme: dark)" srcset="./assets/logo.png"><img alt="Purrdora" src="./assets/logo.png" width="64" align="left" style="margin-right: 12px"></picture> Purrdora
+# Purrdora
 
-Dashboard giám sát & điều khiển hệ thống dành cho Fedora Linux, xây dựng với Tauri v2 + React.
+System monitoring & control dashboard for Fedora Linux, built with Tauri v2 + React.
 
 <p align="center">
   <img alt="Purrdora Logo" src="./assets/logo.png" width="200">
 </p>
 
-## Tính năng
+## Features
 
-- **Giám sát hiệu năng** — biểu đồ CPU, RAM, GPU, và thông tin mạng theo thời gian thực (cập nhật mỗi giây)
-- **Điều khiển âm thanh** — thanh trượt âm lượng và nút bật/tắt tiếng qua PipeWire (`wpctl`)
-- **Trình phát nhạc** — hiển thị bài hát đang phát từ bất kỳ trình phát MPRIS nào (Spotify, Firefox, v.v.)
-- **Power Profiles** — chuyển đổi giữa Power Saver / Balanced / Performance qua UPower D-Bus
-- **GameMode** — bật/tắt FeralInteractive GameMode chỉ với một cú nhấp
-- **Drop RAM Cache** — giải phóng bộ nhớ đệm (yêu cầu quyền sudo)
-- **Custom window frame** — thanh tiêu đề riêng với nút đóng, thu nhỏ, phóng to
+- **System Monitor** — Real-time CPU, RAM, GPU, and network charts (1s refresh)
+- **Audio Mixer** — Volume slider & mute toggle via PipeWire
+- **Media Player** — Now-playing display for any MPRIS-compatible player (Spotify, Firefox, etc.)
+- **Power Profiles** — Switch between Power Saver / Balanced / Performance via UPower D-Bus
+- **GameMode** — One-click FeralInteractive GameMode toggle
+- **Drop RAM Cache** — Free page cache, dentries, and inodes (pkexec/Polkit)
+- **Performance History** — Time-series charts for CPU, RAM, GPU, network
+- **Top Processes** — Live process table sorted by resource usage
+- **MSI EC Monitor** — Fan speeds, CPU/GPU temps from MSI embedded controller
+- **Shutdown Timer** — Schedule system shutdown with countdown
+- **Custom Window Frame** — Native-looking title bar with minimize/maximize/close
 
-## Yêu cầu hệ thống
+## Requirements
 
-- **Fedora Linux** (Workstation, bản 40+)
-- **PipeWire** (cho điều khiển âm thanh)
-- **UPower PowerProfiles** (cho power profiles)
-- **FeralInteractive GameMode** (tùy chọn, cho GameMode toggle)
+- **Fedora Linux** 40+ (Workstation)
+- **PipeWire** for audio control
+- **UPower PowerProfiles** D-Bus service
+- **gamemode** — optional, for GameMode toggle: `sudo dnf install gamemode`
+- **polkit** and **pkexec** — usually pre-installed (`polkit`, `polkit-libs`, `polkit-gnome` or equivalent)
 
-Các công cụ phát triển:
+## Quick Start
+
+```bash
+pnpm install          # Install dependencies
+pnpm tauri:dev        # Run in development mode
+pnpm tauri:build      # Build for production
+```
+
+Build output: `src-tauri/target/release/bundle/`
+
+### Development Tools
 
 - **Node.js** >= 20 + **pnpm**
-- **Rust** >= 1.77.2
+- **Rust** >= 1.77
 - **Tauri CLI** >= 2.x
 
-## Cài đặt & Chạy
+## Privileged Access (Polkit Helper)
+
+Hardware monitoring works without elevated privileges. Executing hardware commands (Fan Modes, Shift Modes, Cooler Boost, Keyboard Backlight, Battery limits, Power Profiles) requires superuser access.
+
+Purrdora uses a dedicated Rust helper (`purrdora-helper`) with **PolicyKit (polkit)** rules for secure, passwordless execution.
 
 ```bash
-# 1. Cài dependencies
-pnpm install
-
-# 2. Chạy ở môi trường development
-pnpm tauri:dev
-
-# 3. Build production
-pnpm tauri:build
+pnpm tauri:build                     # Build first
+sudo ./packaging/install.sh          # Install helper + polkit rules
 ```
 
-File cài đặt sẽ nằm trong `src-tauri/target/release/bundle/`.
+What the installer does:
+1. Copies `purrdora-helper` to `/usr/libexec/purrdora-helper` (input-whitelisted, memory-safe Rust)
+2. Installs Polkit policy: `/usr/share/polkit-1/actions/com.purrdora.pkexec.policy`
+3. Installs Polkit rules: `/etc/polkit-1/rules.d/99-purrdora.rules`
 
-## Công nghệ sử dụng
+> **Note:** A `pkexec` dialog may appear on first privileged action, or if Polkit is misconfigured. In dev mode (`pnpm tauri:dev`), a setup dialog warns when the helper isn't installed.
 
-| Lớp | Công nghệ |
-|------|-----------|
+### Security Design
+
+- **No setuid on Tauri binary** — the GUI runs entirely unprivileged (webview + JS attack surface)
+- **Isolated helper** — `/usr/libexec/purrdora-helper` is a hardened Rust binary with a hardcoded whitelist of allowed actions and strict input sanitization
+- **Granular Polkit rules** — passwordless auth is restricted to `com.purrdora.*` namespace, local active sessions only; no blanket access to `sudo` or `/usr/bin/tee`
+
+## Tech Stack
+
+| Layer    | Technology |
+|----------|------------|
 | Frontend | React 19, TypeScript, Tailwind CSS v4, shadcn/ui, Recharts, Framer Motion, Zustand |
-| Backend | Tauri v2, Rust, sysinfo, tokio, zbus |
-| Âm thanh | PipeWire (`wpctl` CLI) |
-| D-Bus | MPRIS (media player), UPower PowerProfiles, GameMode |
+| Backend  | Tauri v2, Rust, sysinfo, tokio, zbus |
+| Audio    | PipeWire (`wpctl` CLI) |
+| D-Bus    | MPRIS, UPower PowerProfiles, GameMode |
 
-## Cấu trúc dự án
+## Project Structure
 
 ```
-├── assets/                  # Logo & assets
-│   └── logo.png
-├── src/                     # Frontend React
-│   ├── App.tsx              # Entry point
+├── assets/                    # Logo & static assets
+├── src/                       # Frontend (React + TypeScript)
+│   ├── App.tsx                # Root component
+│   ├── main.tsx               # React entry point
+│   ├── index.css              # Tailwind & global styles
 │   ├── components/
-│   │   ├── widgets/         # CpuWidget, RamWidget, GpuWidget
-│   │   ├── VolumeSlider.tsx # Thanh trượt âm lượng
-│   │   ├── MediaPlayerWidget.tsx  # Widget trình phát nhạc
-│   │   ├── QuickActions.tsx # GameMode & Drop Cache
-│   │   ├── Layout.tsx       # Khung cửa sổ chính
-│   │   └── TrafficLights.tsx # Nút close/minimize/maximize
-│   ├── hooks/               # useIpcListener, useDebounce
-│   ├── store/               # Zustand store (useSystemStore)
-│   └── types/               # TypeScript type definitions
-├── src-tauri/               # Backend Rust
+│   │   ├── Layout.tsx         # Main window frame
+│   │   ├── BottomDock.tsx     # Bottom dock bar
+│   │   ├── FooterStrip.tsx    # Status footer
+│   │   ├── AudioMixerWidget.tsx
+│   │   ├── MediaPlayerWidget.tsx
+│   │   ├── MsiCenterPage.tsx  # MSI hardware page
+│   │   ├── QuickActions.tsx   # GameMode, RAM cache
+│   │   ├── ShutdownTimer.tsx  # Shutdown scheduler
+│   │   └── widgets/
+│   │       ├── factory.tsx    # Widget registry
+│   │       ├── CpuWidget.tsx
+│   │       ├── GpuWidget.tsx
+│   │       ├── RamWidget.tsx
+│   │       ├── NetworkWidget.tsx
+│   │       ├── GameStatusWidget.tsx
+│   │       ├── HardwareStatsWidget.tsx
+│   │       ├── MsiEcWidget.tsx
+│   │       ├── PerformanceHistoryWidget.tsx
+│   │       ├── RunningGameWidget.tsx
+│   │       ├── SessionToolsWidget.tsx
+│   │       ├── SystemMetricsWidget.tsx
+│   │       └── TopProcessesWidget.tsx
+│   ├── hooks/
+│   │   ├── useDebounce.ts
+│   │   └── useIpcListener.ts
+│   ├── store/
+│   │   └── useSystemStore.ts  # Zustand state
+│   └── types/
+│       └── schema.d.ts        # Type definitions
+├── src-tauri/                 # Backend (Rust)
+│   ├── Cargo.toml
+│   ├── tauri.conf.json        # Tauri v2 config
+│   ├── capabilities/          # Permission scopes
 │   └── src/
-│       ├── main.rs          # Entry point
-│       ├── lib.rs           # Tauri builder & command registration
-│       ├── monitor.rs       # System telemetry (CPU, RAM, GPU, network)
-│       ├── audio.rs         # PipeWire audio control (wpctl)
-│       ├── mpris.rs         # MPRIS media player listener
-│       ├── optimizer.rs     # Power profiles, GameMode, RAM cache
-│       └── ipc.rs           # IPC emitter (event queue)
-└── resources/               # App icons & assets
-```
-
-## Quick Actions
-
-### GameMode
-Bật/tắt FeralInteractive GameMode. Khi bật, biểu tượng sẽ đổi màu cyan kèm chấm chỉ báo. Yêu cầu cài đặt `gamemoded`:
-
-```bash
-sudo dnf install gamemode
-```
-
-### Drop RAM Cache
-Giải phóng page cache, dentries và inodes. Cần chạy app với quyền sudo hoặc cấu hình sudoers:
-
-```bash
-# Cho phép không cần mật khẩu (tùy chọn)
-echo "$USER ALL=(ALL) NOPASSWD: /usr/bin/tee /proc/sys/vm/drop_caches" | sudo tee /etc/sudoers.d/drop-cache
+│       ├── main.rs            # Entry point
+│       ├── lib.rs             # Command registration
+│       ├── audio.rs           # PipeWire audio control
+│       ├── monitor.rs         # System telemetry
+│       ├── mpris.rs           # MPRIS media player
+│       ├── optimizer.rs       # Power profiles & GameMode
+│       ├── msi_ec.rs          # MSI embedded controller
+│       ├── helper.rs          # Privileged helper binary
+│       ├── operating_mode.rs  # Performance mode profiles
+│       └── privileged.rs      # Polkit integration
+└── resources/                 # App icons & assets
 ```
 
 ## License

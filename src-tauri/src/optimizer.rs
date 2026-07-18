@@ -1,10 +1,16 @@
 use serde::{Deserialize, Serialize};
 use std::{
-    fs,
+    path::Path,
     process::{Child, Command},
     sync::Mutex,
 };
+use tokio::{
+    process::Command as AsyncCommand,
+    time::{timeout, Duration},
+};
 use zbus::proxy;
+
+const POWER_PROFILE_TIMEOUT: Duration = Duration::from_secs(5);
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "kebab-case")]
@@ -45,7 +51,7 @@ impl KeepAwakeState {
 }
 
 impl PowerProfile {
-    fn as_dbus_value(&self) -> &'static str {
+    pub(crate) fn as_dbus_value(&self) -> &'static str {
         match self {
             Self::PowerSaver => "power-saver",
             Self::Balanced => "balanced",
@@ -84,22 +90,177 @@ pub async fn set_power_profile(
     profile: PowerProfile,
     telemetry: tauri::State<'_, crate::monitor::TelemetryEngine>,
 ) -> Result<String, String> {
-    let connection = zbus::Connection::system()
-        .await
-        .map_err(|e| format!("power profile system bus unavailable: {e}"))?;
-    let proxy = PowerProfilesProxy::new(&connection)
-        .await
-        .map_err(|e| format!("power profile daemon unavailable: {e}"))?;
-    proxy
-        .set_profile(profile.as_dbus_value())
-        .await
-        .map_err(|e| format!("power profile rejected: {e}"))?;
-    let active_profile = proxy
-        .active_profile()
-        .await
-        .map_err(|e| format!("power profile could not be verified: {e}"))?;
+    set_power_profile_value(profile, &telemetry).await
+}
+
+pub(crate) async fn set_power_profile_value(
+    profile: PowerProfile,
+    telemetry: &crate::monitor::TelemetryEngine,
+) -> Result<String, String> {
+    let profile_val = profile.as_dbus_value();
+
+    // Try standard DBus invocation first
+    let dbus_result = async {
+        let connection = zbus::Connection::system().await?;
+        let proxy = PowerProfilesProxy::new(&connection).await?;
+        proxy.set_profile(profile_val).await?;
+        let active = proxy.active_profile().await?;
+        Ok::<String, zbus::Error>(active)
+    }
+    .await;
+
+    let active_profile = match dbus_result {
+        Ok(active) => active,
+        Err(e) => {
+            log::warn!("DBus power profile switch failed: {e}. Trying powerprofilesctl...");
+            match set_power_profile_with_cli(profile_val).await {
+                Ok(active) => active,
+                Err(cli_error) => {
+                    log::warn!(
+                        "powerprofilesctl fallback failed: {cli_error}. Trying tuned-adm..."
+                    );
+                    match set_power_profile_with_tuned(profile_val).await {
+                        Ok(active) => active,
+                        Err(tuned_error) => {
+                            log::warn!(
+                                "tuned-adm fallback failed: {tuned_error}. Trying helper..."
+                            );
+                            crate::privileged::run_privileged_action("set-power-profile", profile_val)
+                                .map_err(|helper_error| {
+                                    format!("{cli_error}; {tuned_error}; helper fallback failed: {helper_error}")
+                                })?;
+                            profile_val.to_owned()
+                        }
+                    }
+                }
+            }
+        }
+    };
+
     telemetry.record_profile_switch();
     Ok(active_profile)
+}
+
+async fn set_power_profile_with_cli(profile: &str) -> Result<String, String> {
+    let command = [
+        "/usr/bin/powerprofilesctl",
+        "/usr/local/bin/powerprofilesctl",
+        "powerprofilesctl",
+    ]
+    .into_iter()
+    .find(|candidate| *candidate == "powerprofilesctl" || Path::new(candidate).is_file())
+    .ok_or_else(|| {
+        "powerprofilesctl is not installed; install power-profiles-daemon with `sudo dnf install power-profiles-daemon`".to_owned()
+    })?;
+
+    let set_output = timeout(
+        POWER_PROFILE_TIMEOUT,
+        AsyncCommand::new(command).args(["set", profile]).output(),
+    )
+    .await
+    .map_err(|_| "powerprofilesctl set timed out".to_owned())?
+    .map_err(|error| format!("could not start powerprofilesctl: {error}"))?;
+
+    if !set_output.status.success() {
+        return Err(format!(
+            "powerprofilesctl rejected {profile}: {}",
+            String::from_utf8_lossy(&set_output.stderr).trim()
+        ));
+    }
+
+    let get_output = timeout(
+        POWER_PROFILE_TIMEOUT,
+        AsyncCommand::new(command).arg("get").output(),
+    )
+    .await
+    .map_err(|_| "powerprofilesctl get timed out".to_owned())?
+    .map_err(|error| format!("could not verify power profile: {error}"))?;
+
+    if !get_output.status.success() {
+        return Err(format!(
+            "power profile verification failed: {}",
+            String::from_utf8_lossy(&get_output.stderr).trim()
+        ));
+    }
+
+    let active = String::from_utf8_lossy(&get_output.stdout)
+        .trim()
+        .to_owned();
+    if active != profile {
+        return Err(format!(
+            "power profile verification returned {active}, expected {profile}"
+        ));
+    }
+    Ok(active)
+}
+
+async fn set_power_profile_with_tuned(profile: &str) -> Result<String, String> {
+    let tuned_profile = match profile {
+        "power-saver" => "powersave",
+        "balanced" => "balanced",
+        // TuneD does not expose a profile literally named "performance".
+        "performance" => "throughput-performance",
+        _ => return Err(format!("unsupported power profile: {profile}")),
+    };
+
+    let set_output = timeout(
+        POWER_PROFILE_TIMEOUT,
+        AsyncCommand::new("tuned-adm")
+            .args(["profile", tuned_profile])
+            .output(),
+    )
+    .await
+    .map_err(|_| "tuned-adm profile switch timed out".to_owned())?
+    .map_err(|error| format!("could not start tuned-adm: {error}"))?;
+
+    if !set_output.status.success() {
+        return Err(format!(
+            "tuned-adm rejected {tuned_profile}: {}",
+            String::from_utf8_lossy(&set_output.stderr).trim()
+        ));
+    }
+
+    let active_output = timeout(
+        POWER_PROFILE_TIMEOUT,
+        AsyncCommand::new("tuned-adm").arg("active").output(),
+    )
+    .await
+    .map_err(|_| "tuned-adm verification timed out".to_owned())?
+    .map_err(|error| format!("could not verify tuned profile: {error}"))?;
+
+    if !active_output.status.success() {
+        return Err(format!(
+            "tuned-adm verification failed: {}",
+            String::from_utf8_lossy(&active_output.stderr).trim()
+        ));
+    }
+
+    let active = String::from_utf8_lossy(&active_output.stdout);
+    if !active.lines().any(|line| {
+        line.trim() == tuned_profile || line.trim().ends_with(&format!("profile: {tuned_profile}"))
+    }) {
+        return Err(format!(
+            "tuned profile verification did not return {tuned_profile}"
+        ));
+    }
+    Ok(profile.to_owned())
+}
+
+pub(crate) fn set_notifications_muted(muted: bool) -> Result<(), String> {
+    let status = Command::new("gsettings")
+        .args([
+            "set",
+            "org.gnome.desktop.notifications",
+            "show-banners",
+            if muted { "false" } else { "true" },
+        ])
+        .status()
+        .map_err(|error| format!("could not update GNOME notifications: {error}"))?;
+    if status.success() {
+        Ok(())
+    } else {
+        Err("GNOME rejected notification mode".to_owned())
+    }
 }
 
 #[tauri::command]
@@ -147,9 +308,15 @@ pub async fn check_gamemode_status() -> Result<String, String> {
 
 #[tauri::command]
 pub fn clear_ram_cache() -> Result<String, String> {
-    fs::write("/proc/sys/vm/drop_caches", b"3\n")
-        .map_err(|e| format!("drop caches denied by the OS: {e}"))?;
+    crate::privileged::run_privileged_action("drop-caches", "")?;
     Ok("RAM cache dropped".to_owned())
+}
+
+/// Remove only DNF's downloaded package metadata/cache; never touches user files.
+#[tauri::command]
+pub fn clean_disk_cache() -> Result<String, String> {
+    crate::privileged::run_privileged_action("clean-disk-cache", "")?;
+    Ok("DNF package cache cleaned".to_owned())
 }
 
 #[tauri::command]

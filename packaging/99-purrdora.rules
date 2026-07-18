@@ -1,0 +1,14 @@
+polkit.addRule(function(action, subject) {
+    var allowed = [
+        "com.purrdora.setfanmode", "com.purrdora.setshiftmode",
+        "com.purrdora.setcoolerboost", "com.purrdora.setsuperbattery",
+        "com.purrdora.setwebcam", "com.purrdora.setwinkey",
+        "com.purrdora.setfnkey", "com.purrdora.setkbdbacklight",
+        "com.purrdora.setbatterylimit", "com.purrdora.setpowerprofile",
+        "com.purrdora.dropcaches", "com.purrdora.cleandiskcache"
+    ];
+    if (allowed.indexOf(action.id) !== -1 &&
+        subject.local && subject.active) {
+        return polkit.Result.YES;
+    }
+});

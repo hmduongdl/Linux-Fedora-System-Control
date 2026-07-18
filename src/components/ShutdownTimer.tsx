@@ -42,7 +42,7 @@ const ShutdownTimer = memo(function ShutdownTimer() {
   }, [setShutdownTimer]);
 
   return (
-    <section className="mac-glass h-full p-2">
+    <section className="glass-panel h-full p-2">
       <div className="mb-2 flex items-center justify-between gap-2">
         <div><h2 className="text-[11px] font-semibold uppercase tracking-widest text-[#A855F7]">Shutdown / Timer</h2><p className="mt-0.5 text-[10px] text-[#777797]">Schedule a safe power-off</p></div>
         <StatusPill label={remaining == null ? "No timer" : formatRemaining(remaining)} active={remaining != null} />

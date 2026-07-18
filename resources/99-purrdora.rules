@@ -1,0 +1,11 @@
+# Purrdora MSI EC controls. Install with:
+# sudo cp resources/99-purrdora.rules /etc/udev/rules.d/
+# sudo udevadm control --reload && sudo udevadm trigger
+
+ACTION=="add|change", SUBSYSTEM=="platform", KERNEL=="msi-ec", RUN+="/usr/bin/chgrp wheel /sys%p/fan_mode", RUN+="/usr/bin/chmod g+w /sys%p/fan_mode"
+ACTION=="add|change", SUBSYSTEM=="platform", KERNEL=="msi-ec", RUN+="/usr/bin/chgrp wheel /sys%p/shift_mode", RUN+="/usr/bin/chmod g+w /sys%p/shift_mode"
+ACTION=="add|change", SUBSYSTEM=="platform", KERNEL=="msi-ec", RUN+="/usr/bin/chgrp wheel /sys%p/cooler_boost", RUN+="/usr/bin/chmod g+w /sys%p/cooler_boost"
+ACTION=="add|change", SUBSYSTEM=="platform", KERNEL=="msi-ec", RUN+="/usr/bin/chgrp wheel /sys%p/super_battery", RUN+="/usr/bin/chmod g+w /sys%p/super_battery"
+ACTION=="add|change", SUBSYSTEM=="leds", KERNEL=="msiacpi::kbd_backlight", RUN+="/usr/bin/chgrp wheel /sys%p/brightness", RUN+="/usr/bin/chmod g+w /sys%p/brightness"
+ACTION=="add|change", SUBSYSTEM=="power_supply", KERNEL=="BAT[0-9]*", TEST=="charge_control_end_threshold", RUN+="/usr/bin/chgrp wheel /sys%p/charge_control_end_threshold", RUN+="/usr/bin/chmod g+w /sys%p/charge_control_end_threshold"
+ACTION=="add|change", SUBSYSTEM=="power_supply", KERNEL=="BAT[0-9]*", TEST=="charge_control_end_threshold", RUN+="/usr/bin/chgrp wheel /sys%p/charge_control_start_threshold", RUN+="/usr/bin/chmod g+w /sys%p/charge_control_start_threshold"

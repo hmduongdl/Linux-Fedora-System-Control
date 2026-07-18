@@ -7,6 +7,7 @@
   ],
   "permissions": [
     "core:default",
+    "core:window:allow-set-fullscreen",
     "shell:allow-open",
     {
       "identifier": "shell:allow-execute",
@@ -19,6 +20,21 @@
         {
           "name": "journalctl",
           "cmd": "journalctl",
+          "args": true
+        },
+        {
+          "name": "xdg-open",
+          "cmd": "xdg-open",
+          "args": true
+        },
+        {
+          "name": "ptyxis",
+          "cmd": "ptyxis",
+          "args": true
+        },
+        {
+          "name": "gnome-control-center",
+          "cmd": "gnome-control-center",
           "args": true
         }
       ]
@@ -34,6 +50,21 @@
         {
           "name": "journalctl",
           "cmd": "journalctl",
+          "args": true
+        },
+        {
+          "name": "xdg-open",
+          "cmd": "xdg-open",
+          "args": true
+        },
+        {
+          "name": "ptyxis",
+          "cmd": "ptyxis",
+          "args": true
+        },
+        {
+          "name": "gnome-control-center",
+          "cmd": "gnome-control-center",
           "args": true
         }
       ]
