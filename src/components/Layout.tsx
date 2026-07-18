@@ -1,4 +1,4 @@
-import { memo, ReactNode } from "react";
+import { memo, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import TrafficLights from "./TrafficLights";
 import { closeWindow, minimizeWindow, toggleMaximize } from "../hooks/useWindowControls";

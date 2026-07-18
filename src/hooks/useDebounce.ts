@@ -4,7 +4,7 @@ export function useDebounce<T extends (...args: never[]) => void>(
   fn: T,
   delay: number,
 ): T {
-  const timer = useRef<ReturnType<typeof setTimeout>>();
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const fnRef = useRef(fn);
   fnRef.current = fn;
 

@@ -1,5 +1,3 @@
-use tauri::Manager;
-
 #[tauri::command]
 fn close_window(window: tauri::WebviewWindow) {
     window.close().unwrap_or_default();
@@ -29,8 +27,22 @@ pub fn run() {
             close_window,
             minimize_window,
             toggle_maximize,
+            audio::get_audio_state,
+            audio::set_audio_volume,
+            audio::toggle_audio_mute,
+            optimizer::set_power_profile,
+            optimizer::toggle_gamemode,
+            optimizer::check_gamemode_status,
+            optimizer::clear_ram_cache,
         ])
         .setup(|app| {
+            let ipc = IpcEmitter::start(app.handle().clone());
+            app.manage(mpris::start(ipc.clone()));
+            let telemetry = TelemetryEngine::new();
+            telemetry.start(app.handle().clone(), ipc.clone());
+            app.manage(ipc);
+            app.manage(telemetry);
+
             if cfg!(debug_assertions) {
                 app.handle().plugin(
                     tauri_plugin_log::Builder::default()
@@ -47,6 +59,22 @@ pub fn run() {
 
             Ok(())
         })
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application")
+        .run(|app, event| {
+            if let tauri::RunEvent::Exit = event {
+                if let Some(shutdown) = app.try_state::<mpris::MprisShutdown>() {
+                    shutdown.shutdown();
+                }
+            }
+        });
 }
+mod audio;
+mod ipc;
+mod monitor;
+mod optimizer;
+
+use ipc::IpcEmitter;
+use monitor::TelemetryEngine;
+use tauri::Manager;
+mod mpris;
