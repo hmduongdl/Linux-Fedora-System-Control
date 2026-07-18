@@ -68,9 +68,10 @@ impl PowerProfile {
     default_path = "/org/freedesktop/UPower/PowerProfiles"
 )]
 trait PowerProfiles {
-    fn set_profile(&self, profile: &str) -> zbus::Result<()>;
     #[zbus(property, name = "ActiveProfile")]
     fn active_profile(&self) -> zbus::Result<String>;
+    #[zbus(property, name = "ActiveProfile")]
+    fn set_active_profile(&self, profile: &str) -> zbus::Result<()>;
 }
 
 #[proxy(
@@ -95,25 +96,44 @@ pub async fn set_power_profile(
     let _control_guard = SYSTEM_CONTROL_LOCK
         .try_lock()
         .map_err(|_| "another system mode change is already running".to_owned())?;
-    let result = set_power_profile_value(profile, &telemetry).await;
+    let active_profile = set_power_profile_value(profile, &telemetry).await?;
+    apply_power_profile_hardware(profile)?;
+    Ok(active_profile)
+}
 
-    // Adjust fan and battery to match power profile
+/// Keep the MSI EC settings aligned with the user-selected system power profile.
+/// Cooler Boost remains an explicit user choice; a profile change only selects its
+/// corresponding fan preset.
+fn apply_power_profile_hardware(profile: PowerProfile) -> Result<(), String> {
+    let fan_mode = match profile {
+        PowerProfile::PowerSaver => "silent",
+        PowerProfile::Balanced => "auto",
+        PowerProfile::Performance => "advanced",
+    };
+
+    crate::msi_ec::set_msi_ec_fan_mode(fan_mode.to_owned()).map_err(|error| {
+        format!(
+            "power profile was changed, but fan mode '{fan_mode}' could not be applied: {error}"
+        )
+    })?;
+
     match profile {
-        PowerProfile::PowerSaver => {
-            let _ = crate::msi_ec::set_msi_ec_fan_mode("silent".to_owned());
-            let _ = crate::msi_ec::set_msi_ec_cooler_boost(false);
-            let _ = crate::monitor::set_battery_limiter(true);
-        }
-        PowerProfile::Balanced => {
-            let _ = crate::msi_ec::set_msi_ec_fan_mode("auto".to_owned());
-            let _ = crate::msi_ec::set_msi_ec_cooler_boost(false);
-        }
-        PowerProfile::Performance => {
-            let _ = crate::monitor::set_battery_limiter(false);
-        }
+        PowerProfile::PowerSaver => crate::monitor::set_battery_limiter(true)
+            .map(|_| ())
+            .map_err(|error| {
+                format!(
+                    "power profile was changed, but battery limiter could not be enabled: {error}"
+                )
+            }),
+        PowerProfile::Performance => crate::monitor::set_battery_limiter(false)
+            .map(|_| ())
+            .map_err(|error| {
+                format!(
+                    "power profile was changed, but battery limiter could not be disabled: {error}"
+                )
+            }),
+        PowerProfile::Balanced => Ok(()),
     }
-
-    result
 }
 
 pub(crate) async fn set_power_profile_value(
@@ -126,7 +146,7 @@ pub(crate) async fn set_power_profile_value(
     let dbus_result = async {
         let connection = zbus::Connection::system().await?;
         let proxy = PowerProfilesProxy::new(&connection).await?;
-        proxy.set_profile(profile_val).await?;
+        proxy.set_active_profile(profile_val).await?;
         let active = proxy.active_profile().await?;
         Ok::<String, zbus::Error>(active)
     }

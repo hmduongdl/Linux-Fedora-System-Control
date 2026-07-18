@@ -76,15 +76,18 @@ pub fn run() {
                 .get_webview_window("main")
                 .ok_or_else(|| "main webview window was not created".to_owned())?;
 
-            // Start at 80% of the active monitor so the initial window is
-            // comfortable on 720p/FHD/2K/4K displays. Fullscreen later uses
-            // the monitor's native size; this native call avoids frontend
-            // `window.set_size` permission errors and resize feedback loops.
+            // Start at 80% of the active monitor and lock the minimum
+            // window size to the same 80% so users can resize larger but
+            // never smaller. Fullscreen later uses the monitor's native size;
+            // this native call avoids frontend `window.set_size` permission
+            // errors and resize feedback loops.
             if let Ok(Some(monitor)) = window.current_monitor() {
                 let monitor_size = monitor.size();
                 let width = ((monitor_size.width as f64) * 0.8).round() as u32;
                 let height = ((monitor_size.height as f64) * 0.8).round() as u32;
-                let _ = window.set_size(tauri::PhysicalSize::new(width, height));
+                let min_size = tauri::PhysicalSize::new(width, height);
+                let _ = window.set_min_size(Some(min_size));
+                let _ = window.set_size(min_size);
             }
 
             // Opening WebKitGTK's inspector automatically makes development

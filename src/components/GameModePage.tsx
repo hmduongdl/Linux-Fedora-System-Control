@@ -17,6 +17,7 @@ export default function GameModePage() {
   const [isMangoInstalled, setIsMangoInstalled] = useState<boolean>(false);
   const [isMangoConfigured, setIsMangoConfigured] = useState<boolean>(false);
   const [loadingMango, setLoadingMango] = useState<boolean>(true);
+  const [mangoError, setMangoError] = useState<string | null>(null);
   const [sessions, setSessions] = useState<GameSession[]>([]);
   const [dismissedOnboarding, setDismissedOnboarding] = useState<boolean>(() => {
     return localStorage.getItem("purrdora_mangohud_onboarding_dismissed") === "true";
@@ -52,15 +53,13 @@ export default function GameModePage() {
   }, []);
 
   const handleConfigureMango = async () => {
+    setMangoError(null);
     try {
-      const msg = await invoke<string>("configure_mangohud");
+      await invoke<string>("configure_mangohud");
       setIsMangoConfigured(true);
-      setIsSuccess(true);
-      setActionStatus(msg || "Đã cấu hình MangoHud thành công!");
       fetchSessions();
     } catch (error) {
-      setIsSuccess(false);
-      setActionStatus(`Lỗi cấu hình MangoHud: ${String(error)}`);
+      setMangoError(`Lỗi cấu hình MangoHud: ${String(error)}`);
     }
   };
 
@@ -201,6 +200,7 @@ export default function GameModePage() {
                       <div className="flex h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                     </div>
                   )}
+                  {mangoError && <p className="rounded border border-red-500/15 bg-red-500/5 px-2 py-1.5 text-[8px] text-red-400">{mangoError}</p>}
                 </div>
               </div>
             </WidgetFactory>

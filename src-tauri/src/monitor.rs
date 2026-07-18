@@ -775,8 +775,19 @@ fn parse_memory_field_mib(contents: &str, field: &str) -> Option<f64> {
     })
 }
 
+fn parse_status_u32(contents: &str, field: &str) -> Option<u32> {
+    contents.lines().find_map(|line| {
+        line.trim_start()
+            .strip_prefix(field)?
+            .trim()
+            .parse::<u32>()
+            .ok()
+    })
+}
+
 #[derive(Clone, Copy)]
 struct ProcessMemory {
+    tgid: u32,
     private_mb: f64,
     file_mb: f64,
     shmem_mb: f64,
@@ -786,22 +797,26 @@ fn process_memory(pid: u32, fallback_bytes: u64) -> ProcessMemory {
     let fallback_mb = fallback_bytes as f64 / 1_048_576.0;
     let Ok(status) = fs::read_to_string(format!("/proc/{pid}/status")) else {
         return ProcessMemory {
+            tgid: pid,
             private_mb: fallback_mb,
             file_mb: 0.0,
             shmem_mb: 0.0,
         };
     };
 
+    let tgid = parse_status_u32(&status, "Tgid:").unwrap_or(pid);
     let private_mb = parse_memory_field_mib(&status, "RssAnon:");
     let file_mb = parse_memory_field_mib(&status, "RssFile:");
     let shmem_mb = parse_memory_field_mib(&status, "RssShmem:");
     match (private_mb, file_mb, shmem_mb) {
         (Some(private_mb), Some(file_mb), Some(shmem_mb)) => ProcessMemory {
+            tgid,
             private_mb,
             file_mb,
             shmem_mb,
         },
         _ => ProcessMemory {
+            tgid,
             private_mb: parse_memory_field_mib(&status, "VmRSS:").unwrap_or(fallback_mb),
             file_mb: 0.0,
             shmem_mb: 0.0,
@@ -866,6 +881,14 @@ pub fn get_top_processes(telemetry: tauri::State<'_, TelemetryEngine>) -> Vec<Pr
         if process_name.is_empty() {
             continue;
         }
+        let process_memory = process_memory(pid, memory);
+        // sysinfo can expose Linux tasks/TIDs alongside process leaders. Every
+        // task in a thread group reports the same resident address space, so
+        // counting them produced impossible values such as Cursor x311 using
+        // 25 GiB. Only the thread-group leader represents process memory.
+        if process_memory.tgid != pid {
+            continue;
+        }
         let executable = executable_identity(pid);
         let display_name = executable
             .as_ref()
@@ -882,7 +905,6 @@ pub fn get_top_processes(telemetry: tauri::State<'_, TelemetryEngine>) -> Vec<Pr
             .map(|(path, _)| format!("exe:{path}"))
             .unwrap_or_else(|| format!("name:{}", process_name.to_lowercase()));
         let cpu = (cpu_usage / num_cpus).clamp(0.0, 100.0);
-        let process_memory = process_memory(pid, memory);
         let group = groups.entry(key).or_insert_with(|| ProcessGroup {
             pid,
             display_name,
@@ -1136,8 +1158,10 @@ mod tests {
 
     #[test]
     fn parses_proc_memory_fields_in_mib() {
-        let sample = "Name:\tbrave\nVmSize:\t409600 kB\nVmRSS:\t153600 kB\nThreads:\t12\n";
+        let sample =
+            "Name:\tbrave\nTgid:\t6236\nVmSize:\t409600 kB\nVmRSS:\t153600 kB\nThreads:\t12\n";
         assert_eq!(parse_memory_field_mib(sample, "VmRSS:"), Some(150.0));
         assert_eq!(parse_memory_field_mib(sample, "Pss:"), None);
+        assert_eq!(parse_status_u32(sample, "Tgid:"), Some(6236));
     }
 }

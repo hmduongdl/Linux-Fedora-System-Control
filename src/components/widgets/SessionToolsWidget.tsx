@@ -2,6 +2,7 @@ import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { BatteryCharging, BellOff, BriefcaseBusiness, Coffee, Gamepad2, Gauge, LoaderCircle, Power, RotateCcw, Timer, VolumeX, Zap } from "lucide-react";
 import { useSystemStore } from "../../store/useSystemStore";
+import { LiveSessionTime } from "../LiveSessionTime";
 import { WidgetFactory } from "./factory";
 
 const SHUTDOWN_OPTIONS = [
@@ -16,14 +17,6 @@ const POWER_PROFILES = [
   { id: "balanced", command: "balanced", label: "Cân bằng", icon: Gauge },
   { id: "performance", command: "performance", label: "Hiệu năng", icon: Zap },
 ] as const;
-
-function formatUptime(seconds: number | undefined) {
-  if (seconds === undefined || seconds === null) return "00:00:00";
-  const h = Math.floor(seconds / 3600).toString().padStart(2, "0");
-  const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, "0");
-  const s = (seconds % 60).toString().padStart(2, "0");
-  return `${h}:${m}:${s}`;
-}
 
 export function SessionToolsWidget() {
   const controls     = useSystemStore((s) => s.controls);
@@ -42,9 +35,6 @@ export function SessionToolsWidget() {
   const [pendingPower, setPendingPower] = useState<"poweroff" | "reboot" | null>(null);
   const [powerError, setPowerError] = useState<string | null>(null);
   
-  const systemUptime = useSystemStore((s) => s.telemetry?.session.system_uptime_seconds);
-  const uptime = formatUptime(systemUptime);
-
   const handleShutdown = async () => {
     if (selectedMinutes == null) return;
     setTimerError(null);
@@ -98,7 +88,7 @@ export function SessionToolsWidget() {
         <div className="flex items-center justify-between">
           <div className="rounded-lg border border-primary/20 bg-primary/10 px-4 py-1.5">
             <p className="text-[9px] font-bold uppercase text-primary/60">Tổng thời gian</p>
-            <p className="big-number glow-purple text-xl text-primary">{uptime}</p>
+            <p className="big-number glow-purple text-xl text-primary"><LiveSessionTime /></p>
           </div>
           <div className="flex items-stretch gap-1.5">
             <div className={`flex min-w-[86px] items-center gap-2 rounded-lg border border-white/10 bg-black/25 px-3 py-1.5 ${modeDisplay.color}`} title={`Chế độ máy: ${modeDisplay.label}`}>

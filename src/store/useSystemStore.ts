@@ -347,6 +347,7 @@ export const useSystemStore = create<SystemStore>((set, get) => ({
             active_profile: { ...state.settings.active_profile, name },
           },
         }));
+        await get().fetchMsiEcState();
         return activeProfile;
       } catch (e) {
         console.error("[setPowerProfile]", e);

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Shield, Sparkles, Trash2 } from "lucide-react";
+import { Shield, Trash2 } from "lucide-react";
 import { useSystemStore } from "../../store/useSystemStore";
 import { WidgetFactory } from "./factory";
 
