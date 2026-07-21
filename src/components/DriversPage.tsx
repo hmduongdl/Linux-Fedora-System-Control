@@ -32,7 +32,7 @@ export default function DriversPage({ fullscreen = false }: { fullscreen?: boole
           <div className="drivers-error-banner border-amber-500/30 bg-amber-500/10 text-amber-300">
             <AlertTriangle size={14} className="shrink-0 mt-0.5" />
             <div className="leading-relaxed text-[12px]">
-              <span className="font-bold">Phát hiện {missingDriverCount} thiết bị thiếu driver!</span> Truy cập tab "Thiếu Driver" trong mục Kiểm Tra Sức Khỏe Phần Cứng để xem chi tiết và cài đặt.
+              <span className="font-bold">Phát hiện {missingDriverCount} thiết bị thiếu driver!</span> Truy cập tab "Thiếu driver" trong mục Chẩn đoán phần cứng để xem chi tiết và cài đặt.
             </div>
           </div>
         )}
@@ -42,7 +42,7 @@ export default function DriversPage({ fullscreen = false }: { fullscreen?: boole
           <div className="drivers-error-banner">
             <AlertCircle size={14} className="shrink-0 mt-0.5" />
             <div className="leading-relaxed text-[12px]">
-              <span className="font-bold">Có lỗi xảy ra khi quét:</span> {error}
+              <span className="font-bold">Lỗi khi quét phần cứng:</span> {error}
             </div>
           </div>
         )}
@@ -62,13 +62,13 @@ export default function DriversPage({ fullscreen = false }: { fullscreen?: boole
           </div>
         )}
 
-        {/* CỘT 1 (LEFT): CẬP NHẬT FIRMWARE HỆ THỐNG (ĐẦU CỘT 1) & KIỂM TRA SỨC KHỎE PHẦN CỨNG */}
+        {/* Cột 1: Cập nhật firmware & Chẩn đoán phần cứng */}
         <div className="drivers-col drivers-col-left">
           <FirmwareUpdateList />
           <HardwareHealthWidget />
         </div>
 
-        {/* CỘT 2 (RIGHT): DANH SÁCH THIẾT BỊ HỆ THỐNG & DRIVER */}
+        {/* Cột 2: Danh sách thiết bị & Trình điều khiển */}
         <div className="drivers-col drivers-col-right">
           <OrphanDeviceList />
         </div>

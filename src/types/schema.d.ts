@@ -378,17 +378,3 @@ export interface PhysicalDiskInfo {
   partitions: PartitionInfo[];
 }
 
-export interface SmartHealthData {
-  installed: boolean;
-  supported: boolean;
-  passed: boolean;
-  wear_level_percent?: number | null;
-  temperature_c?: number | null;
-  power_on_hours?: number | null;
-  power_cycles?: number | null;
-  model_name?: string | null;
-  serial_number?: string | null;
-  firmware_version?: string | null;
-  error_msg?: string | null;
-}
-

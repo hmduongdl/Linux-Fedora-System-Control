@@ -78,7 +78,7 @@ export function HardwareHealthWidget() {
   // Copy command helper with toast
   const handleCopyCommand = (command: string, id: string, name: string) => {
     void navigator.clipboard.writeText(command);
-    setToastMessage(`Đã sao chép lệnh cho ${name}`);
+    setToastMessage(`Đã sao chép lệnh cài đặt cho ${name}`);
     setCopiedMap((prev) => ({ ...prev, [id]: true }));
     setTimeout(() => {
       setToastMessage(null);
@@ -104,7 +104,7 @@ export function HardwareHealthWidget() {
   };
 
   const formatTimeAgo = (epochSecs: number) => {
-    if (epochSecs === 0) return "Không rõ thời gian";
+    if (epochSecs === 0) return "Không xác định";
     const seconds = Math.floor(Date.now() / 1000 - epochSecs);
     if (seconds < 60) return "vừa xong";
     const minutes = Math.floor(seconds / 60);
@@ -181,14 +181,14 @@ export function HardwareHealthWidget() {
       <div className="flex items-center justify-between border-b border-white/5 pb-2">
         <h3 className="header-small-caps flex items-center gap-2 text-[13px] md:text-[14px] text-primary font-bold">
           <Cpu size={15} strokeWidth={2} />
-          KIỂM TRA SỨC KHỎE PHẦN CỨNG
+          CHẨN ĐOÁN PHẦN CỨNG
         </h3>
 
         <button
           onClick={() => void fetchHardwareHealth()}
           disabled={isLoading || isFlashing}
           className="text-slate-500 hover:text-slate-300 transition-colors p-1 disabled:opacity-50"
-          title="Quét lại hệ thống"
+          title="Quét lại"
         >
           <RefreshCw size={12} className={isLoading ? "animate-spin" : ""} />
         </button>
@@ -200,9 +200,9 @@ export function HardwareHealthWidget() {
       {/* TABBED CONTROLS */}
       <div className="flex gap-1 bg-black/40 rounded-lg p-1 border border-white/5">
         {[
-          { id: "orphans" as const, label: "Thiếu Driver", count: orphanDevices.length, color: "text-[#c4b5fd]" },
-          { id: "updates" as const, label: "Cập nhật FW", count: updatableCount, color: "text-[#86efac]" },
-          { id: "missing" as const, label: "Kernel FW Log", count: missingFirmware.length, color: "text-pink-300" }
+          { id: "orphans" as const, label: "Thiếu driver", count: orphanDevices.length, color: "text-[#c4b5fd]" },
+          { id: "updates" as const, label: "Cập nhật firmware", count: updatableCount, color: "text-[#86efac]" },
+          { id: "missing" as const, label: "Nhật ký firmware", count: missingFirmware.length, color: "text-pink-300" }
         ].map((tab) => {
           const isActive = activeTab === tab.id;
           return (
@@ -246,8 +246,8 @@ export function HardwareHealthWidget() {
                 {orphanDevices.length === 0 ? (
                   <div className="flex flex-col items-center justify-center text-center py-6 px-4">
                     <CheckCircle2 size={32} className="text-emerald-400 mb-2" />
-                    <h4 className="text-[13px] font-bold text-slate-200 uppercase tracking-wide">Tối ưu hoàn toàn</h4>
-                    <p className="text-[12px] text-slate-400 mt-1">Không có thiết bị PCI/USB nào thiếu driver nhân.</p>
+                    <h4 className="text-[13px] font-bold text-slate-200 uppercase tracking-wide">Tất cả thiết bị đã sẵn sàng</h4>
+                    <p className="text-[12px] text-slate-400 mt-1">Tất cả thiết bị PCI/USB đều đã có driver.</p>
                   </div>
                 ) : (
                   <div className="space-y-1.5">
@@ -255,7 +255,7 @@ export function HardwareHealthWidget() {
                     {hasNoRecsCount > 0 && (
                       <div className="text-[12px] text-amber-400/90 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1.5 rounded-lg flex items-center justify-between gap-2 mb-2">
                         <span>
-                          <b>{hasNoRecsCount}/{orphanDevices.length}</b> thiết bị chưa có gói driver đề xuất tự động — nhấn Search để tra cứu thủ công online.
+                          <b>{hasNoRecsCount}/{orphanDevices.length}</b> thiết bị chưa có gói driver đề xuất — nhấn Search để tìm kiếm thủ công.
                         </span>
                       </div>
                     )}
@@ -292,7 +292,7 @@ export function HardwareHealthWidget() {
 
                           {/* Recommendation & Action Row */}
                           {loadingRecs && !rec ? (
-                            <div className="text-[11.5px] text-slate-400 italic animate-pulse">Đang tìm đề xuất...</div>
+                            <div className="text-[11.5px] text-slate-400 italic animate-pulse">Đang tìm driver...</div>
                           ) : rec ? (
                             <div className="flex items-center justify-between gap-2 pt-1 border-t border-white/5">
                               <div className="flex items-center gap-1.5 min-w-0 flex-1">
@@ -311,14 +311,14 @@ export function HardwareHealthWidget() {
                             </div>
                           ) : (
                             <div className="flex items-center justify-between text-[12px] pt-1 border-t border-white/5">
-                              <span className="text-slate-400">Thiếu driver nhân PCI/USB</span>
+                              <span className="text-slate-400">Thiếu driver PCI/USB</span>
                               <a
                                 href={`https://linux-hardware.org/?id=${dev.vendor_id}:${dev.device_id}`}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1 bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded transition-all"
                               >
-                                Tra cứu online <ExternalLink size={10} />
+                                Tra cứu trực tuyến <ExternalLink size={10} />
                               </a>
                             </div>
                           )}
@@ -336,22 +336,22 @@ export function HardwareHealthWidget() {
                 {!firmwareStatus?.available ? (
                   <div className="rounded-lg border border-white/5 border-l-2 border-l-pink-500 bg-[#0E0F16]/60 p-3 text-[12.5px] leading-relaxed text-slate-400">
                     <p className="font-bold text-[#c4b5fd] flex items-center gap-1.5 mb-1">
-                      <AlertTriangle size={13} /> Trình quản lý fwupdmgr chưa cài đặt
+                      <AlertTriangle size={13} /> Chưa cài đặt trình quản lý firmware (fwupd)
                     </p>
-                    <p>Ứng dụng không tìm thấy gói lệnh hệ thống <code className="bg-white/5 px-1 py-0.5 rounded text-[#c4b5fd] font-mono text-[12px]">fwupd</code>.</p>
+                    <p>Không tìm thấy gói <code className="bg-white/5 px-1 py-0.5 rounded text-[#c4b5fd] font-mono text-[12px]">fwupd</code> trên hệ thống.</p>
                   </div>
                 ) : !firmwareStatus?.daemon_running ? (
                   <div className="rounded-lg border border-white/5 border-l-2 border-l-amber-500 bg-[#0E0F16]/60 p-3 text-[12.5px] leading-relaxed text-slate-400">
                     <p className="font-bold text-amber-400 flex items-center gap-1.5 mb-1">
-                      <AlertTriangle size={13} /> Daemon fwupd chưa hoạt động
+                      <AlertTriangle size={13} /> Dịch vụ nền fwupd chưa hoạt động
                     </p>
-                    <p>Dịch vụ hệ thống fwupd đang tắt. Cần chạy <code className="bg-white/5 px-1 py-0.5 rounded text-amber-400 font-mono text-[12px]">sudo systemctl start fwupd</code>.</p>
+                    <p>Dịch vụ fwupd chưa được khởi động. Hãy chạy lệnh <code className="bg-white/5 px-1 py-0.5 rounded text-amber-400 font-mono text-[12px]">sudo systemctl start fwupd</code>.</p>
                   </div>
                 ) : (
                   <div>
                     {updateStatus === "success" && (
                       <div className="mb-2 rounded-lg border border-emerald-500/10 bg-emerald-500/5 p-2 text-[12px] text-emerald-400">
-                        ✓ Bản vá firmware đã cài thành công! Sẽ áp dụng ở lần boot kế tiếp.
+                        ✓ Đã cài đặt firmware thành công! Thay đổi sẽ có hiệu lực sau khi khởi động lại.
                       </div>
                     )}
                     {updateStatus === "error" && errorMessage && (
@@ -363,15 +363,15 @@ export function HardwareHealthWidget() {
                     {isFlashing && (
                       <div className="mb-2 rounded-lg border border-white/5 border-l-2 border-l-cyan-500 bg-[#0E0F16]/60 p-2 text-[12px] text-cyan-300 flex items-center gap-2 animate-pulse">
                         <Loader2 size={13} className="animate-spin shrink-0" />
-                        <span>Đang flash firmware... Nhập mật khẩu trong Polkit.</span>
+                        <span>Đang cài đặt firmware... Vui lòng nhập mật khẩu quản trị khi được yêu cầu bởi Polkit.</span>
                       </div>
                     )}
 
                     {updatableDevices.length === 0 ? (
                       <div className="flex flex-col items-center justify-center text-center py-6 px-4">
                         <CheckCircle2 size={32} className="text-emerald-400 mb-2" />
-                        <h4 className="text-[13px] font-bold text-slate-200 uppercase tracking-wide"> Firmware tối ưu</h4>
-                        <p className="text-[12px] text-slate-400 mt-1">Không phát hiện bản vá firmware khả dụng nào.</p>
+                        <h4 className="text-[13px] font-bold text-slate-200 uppercase tracking-wide">Firmware đã cập nhật</h4>
+                        <p className="text-[12px] text-slate-400 mt-1">Không có bản cập nhật firmware nào.</p>
                       </div>
                     ) : (
                       <div className="space-y-1.5">
@@ -421,13 +421,13 @@ export function HardwareHealthWidget() {
                 {missingFirmware.length === 0 ? (
                   <div className="flex flex-col items-center justify-center text-center py-6 px-4">
                     <CheckCircle2 size={32} className="text-emerald-400 mb-2" />
-                    <h4 className="text-[13px] font-bold text-slate-200 uppercase tracking-wide">Kernel Logs Sạch</h4>
-                    <p className="text-[12px] text-slate-400 mt-1">Không phát hiện cảnh báo thiếu tệp firmware nào trong 24h qua.</p>
+                    <h4 className="text-[13px] font-bold text-slate-200 uppercase tracking-wide">Nhật ký kernel bình thường</h4>
+                    <p className="text-[12px] text-slate-400 mt-1">Không có cảnh báo thiếu firmware nào trong 24 giờ qua.</p>
                   </div>
                 ) : (
                   <div className="space-y-1.5">
                     <p className="text-[12px] text-slate-400 mb-1">
-                      Cảnh báo nạp lỗi firmware phát hiện trực tiếp từ logs kernel:
+                      Cảnh báo lỗi tải firmware từ nhật ký kernel:
                     </p>
                     {missingFirmware.map((fw, idx) => (
                       <div

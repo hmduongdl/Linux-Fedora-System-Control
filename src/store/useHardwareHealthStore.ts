@@ -5,15 +5,13 @@ import type {
   MissingFirmware,
   FwupdStatus,
   FullHardwareDevice,
-  PhysicalDiskInfo,
-  SmartHealthData
+  PhysicalDiskInfo
 } from "../types/schema";
 
 export interface HardwareHealthStore {
   orphanDevices: OrphanDevice[];
   fullHardwareDevices: FullHardwareDevice[];
   physicalDisks: PhysicalDiskInfo[];
-  smartHealthMap: Record<string, SmartHealthData>;
   missingFirmware: MissingFirmware[];
   firmwareStatus: FwupdStatus | null;
   isLoading: boolean;
@@ -21,7 +19,6 @@ export interface HardwareHealthStore {
   error: string | null;
 
   fetchHardwareHealth: () => Promise<void>;
-  fetchSmartHealth: (devPath: string) => Promise<SmartHealthData>;
   installFirmware: (ids: string[]) => Promise<void>;
   showOnDashboard: boolean;
   toggleShowOnDashboard: () => void;
@@ -31,7 +28,6 @@ export const useHardwareHealthStore = create<HardwareHealthStore>((set, get) => 
   orphanDevices: [],
   fullHardwareDevices: [],
   physicalDisks: [],
-  smartHealthMap: {},
   missingFirmware: [],
   firmwareStatus: null,
   isLoading: false,
@@ -66,47 +62,12 @@ export const useHardwareHealthStore = create<HardwareHealthStore>((set, get) => 
         lastScanned: Date.now(),
         error: null,
       });
-
-      // Async trigger SMART scan for all discovered physical disks
-      if (physicalDisks.length > 0) {
-        for (const disk of physicalDisks) {
-          void get().fetchSmartHealth(disk.dev_path);
-        }
-      }
     } catch (err: any) {
       console.error("Failed to fetch hardware health:", err);
       set({
         isLoading: false,
         error: err?.message || String(err) || "Failed to scan hardware health",
       });
-    }
-  },
-
-  fetchSmartHealth: async (devPath: string) => {
-    try {
-      const smart = await invoke<SmartHealthData>("get_disk_smart_health", { devPath });
-      set((state) => ({
-        smartHealthMap: {
-          ...state.smartHealthMap,
-          [devPath]: smart,
-        },
-      }));
-      return smart;
-    } catch (err) {
-      console.error(`Failed to fetch SMART for ${devPath}:`, err);
-      const fallback: SmartHealthData = {
-        installed: true,
-        supported: false,
-        passed: false,
-        error_msg: String(err),
-      };
-      set((state) => ({
-        smartHealthMap: {
-          ...state.smartHealthMap,
-          [devPath]: fallback,
-        },
-      }));
-      return fallback;
     }
   },
 

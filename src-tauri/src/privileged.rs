@@ -78,20 +78,6 @@ pub fn run_privileged_action(action: &str, value: &str) -> Result<(), String> {
     }
 }
 
-pub fn run_privileged_action_with_output(action: &str, value: &str) -> Result<String, String> {
-    let helper_path = resolve_helper_path()?;
-    let output = Command::new("pkexec")
-        .args([helper_path.to_string_lossy().as_ref(), action, value])
-        .output()
-        .map_err(|e| format!("Failed to run pkexec: {}", e))?;
-    if output.status.success() || !output.stdout.is_empty() {
-        Ok(String::from_utf8_lossy(&output.stdout).into_owned())
-    } else {
-        let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
-        Err(format!("Helper error: {}", stderr))
-    }
-}
-
 fn resolve_helper_path() -> Result<PathBuf, String> {
     let installed = Path::new("/usr/libexec/purrdora-helper");
     let dev = std::env::current_exe()

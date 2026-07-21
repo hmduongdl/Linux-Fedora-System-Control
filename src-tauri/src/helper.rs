@@ -15,13 +15,6 @@ fn main() {
     let result = match action.as_str() {
         "drop-caches" => drop_caches(),
         "clean-disk-cache" => clean_disk_cache(),
-        "smart" => {
-            if args.len() < 3 {
-                eprintln!("Usage: purrdora-helper smart <dev_path>");
-                std::process::exit(1);
-            }
-            smartctl(&args[2])
-        }
         _ => {
             if args.len() < 3 {
                 eprintln!("Usage: purrdora-helper {} <value>", action);
@@ -187,17 +180,3 @@ fn clean_disk_cache() -> Result<(), String> {
     }
 }
 
-fn smartctl(dev_path: &str) -> Result<(), String> {
-    let output = Command::new("smartctl")
-        .args(["-a", "-j", dev_path])
-        .output()
-        .map_err(|e| format!("Failed to run smartctl: {e}"))?;
-    if output.status.success() || !output.stdout.is_empty() {
-        let stdout = String::from_utf8_lossy(&output.stdout);
-        println!("{stdout}");
-        Ok(())
-    } else {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        Err(format!("smartctl error: {stderr}"))
-    }
-}

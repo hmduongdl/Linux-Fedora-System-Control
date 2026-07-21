@@ -45,21 +45,21 @@ export function HardwareHealthSummary() {
   const severityConfig = {
     critical: {
       color: "bg-red-500",
-      text: "Lỗi nghiêm trọng: Thiếu driver đồ họa hoặc mạng quan trọng",
+      text: "Cảnh báo nghiêm trọng: Thiếu driver đồ họa hoặc mạng",
       lightGlow: "shadow-[0_0_10px_rgba(239,68,68,0.4)]",
       textColor: "text-red-400",
       borderLeft: "border-l-red-500"
     },
     warning: {
       color: "bg-amber-500",
-      text: "Cảnh báo: Có bản vá firmware hoặc thiết bị phụ trợ thiếu driver",
+      text: "Cảnh báo: Có bản cập nhật firmware hoặc thiết bị ngoại vi thiếu driver",
       lightGlow: "shadow-[0_0_10px_rgba(245,158,11,0.4)]",
       textColor: "text-amber-400",
       borderLeft: "border-l-amber-500"
     },
     optimal: {
       color: "bg-emerald-500",
-      text: "Hệ thống tối ưu: Tất cả thiết bị đã được cấu hình chính xác",
+      text: "Hệ thống hoạt động tốt: Tất cả thiết bị đã được nhận diện đầy đủ",
       lightGlow: "shadow-[0_0_10px_rgba(16,185,129,0.4)]",
       textColor: "text-emerald-400",
       borderLeft: "border-l-emerald-500"
@@ -92,7 +92,7 @@ export function HardwareHealthSummary() {
       <div className="flex justify-between text-[10px] font-mono text-slate-500 mt-0.5">
         <span>Thiếu driver: {orphanDevices.length}</span>
         <span>Cập nhật firmware: {updatableCount}</span>
-        <span>Lỗi nạp FW: {missingFirmware.length}</span>
+        <span>Lỗi tải firmware: {missingFirmware.length}</span>
       </div>
     </div>
   );

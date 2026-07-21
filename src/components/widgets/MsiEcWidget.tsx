@@ -33,7 +33,7 @@ export const MsiEcWidget = memo(function MsiEcWidget() {
           <AlertTriangle size={20} className="text-slate-600" />
           <p className="font-semibold">Trình điều khiển msi-ec không hoạt động</p>
           <p className="text-[9px] text-slate-600 leading-normal">
-            Không phát hiện <code className="bg-black/40 px-1 rounded">/sys/devices/platform/msi-ec</code>. Vui lòng kiểm tra cấu hình trình điều khiển trên hệ thống.
+            Không phát hiện <code className="bg-black/40 px-1 rounded">/sys/devices/platform/msi-ec</code>. Vui lòng kiểm tra cấu hình driver trên hệ thống.
           </p>
         </div>
       </WidgetFactory>

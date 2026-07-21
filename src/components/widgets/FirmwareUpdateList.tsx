@@ -8,13 +8,12 @@ import {
   Loader2,
   Lock,
   ChevronDown,
-  ChevronUp,
-  Info
+  ChevronUp
 } from "lucide-react";
 import { useHardwareHealthStore } from "../../store/useHardwareHealthStore";
 
 function timeAgo(epochSecs: number) {
-  if (epochSecs === 0) return "Không rõ";
+  if (epochSecs === 0) return "Không xác định";
   const s = Math.floor(Date.now() / 1000 - epochSecs);
   if (s < 60) return "vừa xong";
   const m = Math.floor(s / 60);
@@ -36,11 +35,9 @@ export function FirmwareUpdateList() {
   const [updatingIds, setUpdatingIds] = useState<string[]>([]);
   const [updateStatus, setUpdateStatus] = useState<"idle" | "running" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [showAllDevices, setShowAllDevices] = useState(false);
   const [showKernelLogs, setShowKernelLogs] = useState(false);
 
   const updatableDevices = firmwareStatus?.devices.filter((d) => d.update_version) ?? [];
-  const upToDateDevices = firmwareStatus?.devices.filter((d) => !d.update_version) ?? [];
 
   const handleUpdate = async (ids: string[]) => {
     if (ids.length === 0) return;
@@ -90,7 +87,7 @@ export function FirmwareUpdateList() {
             onClick={() => void fetchHardwareHealth()}
             disabled={isFlashing || isLoading}
             className="text-slate-500 hover:text-slate-300 transition-colors p-1 disabled:opacity-50"
-            title="Kiểm tra lại"
+            title="Quét lại"
           >
             <RefreshCw size={12} className={isLoading ? "animate-spin" : ""} />
           </button>
@@ -102,7 +99,7 @@ export function FirmwareUpdateList() {
         <div className="rounded-lg border border-white/5 border-l-2 border-l-cyan-500 bg-[#0E0F16]/60 p-2.5 flex items-start gap-2 text-[12.5px] text-cyan-300 animate-pulse">
           <Loader2 size={14} className="animate-spin shrink-0 mt-0.5" />
           <div>
-            <strong>Đang cài đặt cập nhật...</strong> Vui lòng chú ý nhập mật khẩu quản trị trong hộp thoại hệ thống Polkit.
+            <strong>Đang cài đặt bản cập nhật...</strong> Vui lòng nhập mật khẩu quản trị khi được yêu cầu bởi Polkit.
           </div>
         </div>
       )}
@@ -125,19 +122,19 @@ export function FirmwareUpdateList() {
       {!firmwareStatus?.available ? (
         <div className="rounded-lg border border-white/5 border-l-2 border-l-pink-500 bg-[#0E0F16]/60 p-3 text-[12.5px] text-slate-400">
           <p className="font-bold text-[#c4b5fd] flex items-center gap-1.5 mb-1">
-            <AlertTriangle size={13} /> Trình quản lý fwupdmgr chưa cài đặt
+            <AlertTriangle size={13} /> Chưa cài đặt trình quản lý firmware (fwupd)
           </p>
           <p className="leading-relaxed">
-            Dịch vụ quản lý firmware LVFS/fwupd chưa khả dụng. Vui lòng cài đặt gói <code className="bg-white/5 px-1 py-0.5 rounded text-[#c4b5fd] font-mono text-[12px]">fwupd</code>.
+            Dịch vụ quản lý firmware LVFS/fwupd chưa sẵn sàng. Vui lòng cài đặt gói <code className="bg-white/5 px-1 py-0.5 rounded text-[#c4b5fd] font-mono text-[12px]">fwupd</code>.
           </p>
         </div>
       ) : !firmwareStatus?.daemon_running ? (
         <div className="rounded-lg border border-white/5 border-l-2 border-l-amber-500 bg-[#0E0F16]/60 p-3 text-[12.5px] text-slate-400">
           <p className="font-bold text-amber-400 flex items-center gap-1.5 mb-1">
-            <AlertTriangle size={13} /> Dịch vụ fwupd chưa được khởi chạy
+            <AlertTriangle size={13} /> Dịch vụ fwupd chưa được khởi động
           </p>
           <p className="leading-relaxed">
-            Dịch vụ hệ thống fwupd đang tắt. Hãy chạy <code className="bg-white/5 px-1 py-0.5 rounded text-amber-400 font-mono text-[12px]">sudo systemctl start fwupd</code>.
+            Dịch vụ fwupd chưa được khởi động. Hãy chạy lệnh <code className="bg-white/5 px-1 py-0.5 rounded text-amber-400 font-mono text-[12px]">sudo systemctl start fwupd</code>.
           </p>
         </div>
       ) : (
@@ -147,14 +144,14 @@ export function FirmwareUpdateList() {
             <div className="rounded-lg border border-emerald-500/10 bg-emerald-500/5 p-2.5 flex items-center gap-2.5">
               <CheckCircle2 size={18} className="text-emerald-400 shrink-0" />
               <div className="text-[12.5px]">
-                <div className="font-bold text-slate-200 uppercase tracking-wide text-[12px]">Phần sụn tối ưu</div>
-                <div className="text-slate-400 text-[12px]">Không phát hiện bản cập nhật phần cứng nào khả dụng.</div>
+                <div className="font-bold text-slate-200 uppercase tracking-wide text-[12px]">Firmware đã cập nhật</div>
+                <div className="text-slate-400 text-[12px]">Không có bản cập nhật firmware nào.</div>
               </div>
             </div>
           ) : (
             <div className="space-y-1.5">
               <div className="text-[12px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                Bản cập nhật khả dụng ({updatableDevices.length})
+                Bản cập nhật có sẵn ({updatableDevices.length})
               </div>
               <div className="max-h-[300px] overflow-y-auto custom-scrollbar pr-1 space-y-1.5">
                 {updatableDevices.map((dev) => {
@@ -200,38 +197,6 @@ export function FirmwareUpdateList() {
             </div>
           )}
 
-          {/* Up to date Supported Devices List */}
-          <div className="border-t border-white/5 pt-2">
-            <button
-              onClick={() => setShowAllDevices(!showAllDevices)}
-              className="w-full flex items-center justify-between text-[12px] font-bold text-slate-400 uppercase tracking-wider py-0.5 hover:text-slate-200 transition-colors"
-            >
-              <span className="flex items-center gap-1.5">
-                <Info size={12} className="text-slate-400" />
-                Danh sách thiết bị hỗ trợ ({upToDateDevices.length})
-              </span>
-              {showAllDevices ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-            </button>
-
-            {showAllDevices && (
-              <div className="mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-[200px] overflow-y-auto custom-scrollbar pr-1">
-                {upToDateDevices.map((dev) => (
-                  <div
-                    key={dev.device_id}
-                    className="h-[38px] rounded-lg border border-white/5 bg-black/20 px-2 py-1 flex items-center justify-between gap-2"
-                  >
-                    <div className="min-w-0 truncate">
-                      <div className="text-[12.5px] font-bold text-slate-300 truncate" title={dev.name}>{dev.name}</div>
-                      <div className="text-[11.5px] text-slate-400 truncate">Hãng: {dev.vendor}</div>
-                    </div>
-                    <span className="bg-white/5 border border-white/5 px-1.5 py-0.5 rounded text-[11.5px] text-emerald-400 font-mono font-bold shrink-0">
-                      v{dev.current_version}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
       )}
 
@@ -244,7 +209,7 @@ export function FirmwareUpdateList() {
           >
             <span className="flex items-center gap-1.5">
               <ShieldAlert size={12} />
-              Cảnh báo kernel log ({missingFirmware.length})
+              Cảnh báo nhật ký kernel ({missingFirmware.length})
             </span>
             {showKernelLogs ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
           </button>
@@ -252,7 +217,7 @@ export function FirmwareUpdateList() {
           {showKernelLogs && (
             <div className="mt-1.5 space-y-1.5 max-h-[160px] overflow-y-auto custom-scrollbar pr-1">
               <p className="text-[11.5px] text-slate-400 mb-1">
-                Firmware bị kernel báo lỗi khi nạp trong 24h qua — cài <code className="text-[#C4B5FD] font-mono">linux-firmware</code> để khắc phục.
+                Firmware bị kernel báo lỗi khi tải trong 24 giờ qua — cài gói <code className="text-[#C4B5FD] font-mono">linux-firmware</code> để khắc phục.
               </p>
               {missingFirmware.map((fw, idx) => (
                 <div

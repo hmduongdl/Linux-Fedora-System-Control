@@ -62,7 +62,6 @@ pub fn run() {
             driver_scan::scan_orphan_devices,
             driver_scan::scan_full_hardware_devices,
             driver_scan::scan_physical_disks,
-            driver_scan::get_disk_smart_health,
             driver_recommend::get_driver_recommendation,
             driver_scan::scan_missing_firmware,
             firmware::check_firmware_updates,

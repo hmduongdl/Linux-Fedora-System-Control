@@ -1,4 +1,5 @@
-import { memo, useMemo, useState } from "react";
+import { memo, useMemo, useState, useRef, useCallback, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { AreaChart, Area, ResponsiveContainer } from "recharts";
 import { Shield, Trash2 } from "lucide-react";
 import { useSystemStore } from "../../store/useSystemStore";
@@ -46,6 +47,110 @@ const StatTile = ({
     </div>
   </div>
 );
+
+const TemperatureTile = memo(function TemperatureTile({
+  avgTemp,
+  tempData,
+  sensors,
+}: {
+  avgTemp: number | null;
+  tempData: { v: number }[];
+  sensors: { name: string; temperature_celsius: number }[];
+}) {
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const closeTimerRef = useRef<number | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [pos, setPos] = useState({ left: 0, top: 0, width: 0 });
+
+  const updatePosition = useCallback(() => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setPos({
+        left: rect.left,
+        top: rect.bottom + 4,
+        width: Math.min(320, window.innerWidth - 32),
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      updatePosition();
+      const handle = () => updatePosition();
+      window.addEventListener("resize", handle);
+      window.addEventListener("scroll", handle, true);
+      return () => {
+        window.removeEventListener("resize", handle);
+        window.removeEventListener("scroll", handle, true);
+      };
+    }
+  }, [isOpen, updatePosition]);
+
+  const open = useCallback(() => {
+    if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null; }
+    updatePosition();
+    setIsOpen(true);
+  }, [updatePosition]);
+
+  const scheduleClose = useCallback(() => {
+    closeTimerRef.current = window.setTimeout(() => setIsOpen(false), 200);
+  }, []);
+
+  const cancelClose = useCallback(() => {
+    if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null; }
+  }, []);
+
+  return (
+    <>
+      <div
+        ref={triggerRef}
+        className="group relative min-w-0"
+        tabIndex={0}
+        aria-label="Nhiệt độ hệ thống; di chuột để xem chi tiết cảm biến"
+        onMouseEnter={open}
+        onMouseLeave={scheduleClose}
+        onFocus={open}
+        onBlur={scheduleClose}
+      >
+        <StatTile
+          label="NHIỆT ĐỘ TRUNG BÌNH"
+          value={avgTemp != null ? avgTemp.toFixed(0) : "—"}
+          unit="°C"
+          color="glow-pink text-pink-accent"
+          strokeColor="#ec4899"
+          data={tempData}
+        />
+      </div>
+      {isOpen && createPortal(
+        <div
+          ref={dropdownRef}
+          style={{
+            position: "fixed",
+            left: pos.left,
+            top: pos.top,
+            width: pos.width,
+            zIndex: 9999,
+          }}
+          className="overflow-hidden rounded-lg border border-pink-accent/30 bg-[#12131c]/[.98] shadow-[0_12px_30px_rgba(0,0,0,.45)]"
+          onMouseEnter={cancelClose}
+          onMouseLeave={scheduleClose}
+        >
+          <div className="border-b border-white/10 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-pink-300">Nhiệt độ hệ thống</div>
+          <div className="max-h-64 overflow-y-auto p-1.5" style={{ overscrollBehavior: "contain" }}>
+            {sensors.length ? sensors.map((sensor, index) => (
+              <div key={`${sensor.name}-${index}`} className="flex items-center justify-between gap-3 rounded px-1.5 py-1 text-[11px] hover:bg-white/5">
+                <span className="min-w-0 truncate text-[#c5c5da]" title={sensor.name}>{sensor.name}</span>
+                <span className="shrink-0 font-mono text-pink-300">{sensor.temperature_celsius.toFixed(0)}°C</span>
+              </div>
+            )) : <p className="px-1.5 py-2 text-[11px] text-on-surface-variant">Không tìm thấy cảm biến nhiệt độ.</p>}
+          </div>
+        </div>,
+        document.body
+      )}
+    </>
+  );
+});
 
 const ProgressBar = ({
   label,
@@ -149,27 +254,7 @@ export const SystemMetricsWidget = memo(function SystemMetricsWidget() {
       <div className="system-metrics-content flex flex-col gap-[clamp(10px,1.2vh,16px)]">
         {/* 2 stat tiles */}
         <div className="grid grid-cols-2 gap-[clamp(8px,1vh,12px)]">
-          <div className="group relative min-w-0" tabIndex={0} aria-label="Nhiệt độ hệ thống; di chuột để xem chi tiết cảm biến">
-            <StatTile
-              label="NHIỆT ĐỘ TRUNG BÌNH"
-              value={avgTemp != null ? avgTemp.toFixed(0) : "—"}
-              unit="°C"
-              color="glow-pink text-pink-accent"
-              strokeColor="#ec4899"
-              data={tempData}
-            />
-            <div className="pointer-events-none absolute left-0 top-full z-30 mt-2 hidden w-[min(320px,calc(100vw-2rem))] overflow-hidden rounded-lg border border-pink-accent/30 bg-[#12131c]/[.98] shadow-[0_12px_30px_rgba(0,0,0,.45)] group-hover:block group-focus:block">
-              <div className="border-b border-white/10 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-pink-300">Nhiệt độ hệ thống</div>
-              <div className="max-h-52 overflow-y-auto p-1.5">
-                {temperatureSensors.length ? temperatureSensors.map((sensor, index) => (
-                  <div key={`${sensor.name}-${index}`} className="flex items-center justify-between gap-3 rounded px-1.5 py-1 text-[11px] hover:bg-white/5">
-                    <span className="min-w-0 truncate text-[#c5c5da]" title={sensor.name}>{sensor.name}</span>
-                    <span className="shrink-0 font-mono text-pink-300">{sensor.temperature_celsius.toFixed(0)}°C</span>
-                  </div>
-                )) : <p className="px-1.5 py-2 text-[11px] text-on-surface-variant">Không tìm thấy cảm biến nhiệt độ.</p>}
-              </div>
-            </div>
-          </div>
+          <TemperatureTile avgTemp={avgTemp} tempData={tempData} sensors={temperatureSensors} />
           <StatTile
             label="ĐỘ TRỄ MẠNG"
             value={ping > 0 ? ping.toFixed(0) : "—"}

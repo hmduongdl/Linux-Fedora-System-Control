@@ -4,7 +4,6 @@ use std::path::Path;
 use std::process::Command;
 
 use crate::pci_ids;
-use crate::privileged;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OrphanDevice {
@@ -266,10 +265,10 @@ pub fn scan_full_hardware_devices() -> Vec<FullHardwareDevice> {
             };
 
             let is_missing = driver.is_none();
-            let driver_str = driver.unwrap_or_else(|| "Chưa nạp driver".into());
-            let pci_str = format!("{:04x}:{:04x}", vendor_id, device_id);
+            let driver_str = driver.unwrap_or_else(|| "Chưa có trình điều khiển".into());
 
             let slot_name = path.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default();
+            let pci_str = format!("{:04x}:{:04x}", vendor_id, device_id);
 
             list.push(FullHardwareDevice {
                 id: format!("pci-{}", slot_name),
@@ -281,7 +280,7 @@ pub fn scan_full_hardware_devices() -> Vec<FullHardwareDevice> {
                 version: format!("PCI {}", slot_name),
                 pci_id: Some(pci_str),
                 status: if is_missing { "missing".into() } else { "active".into() },
-                status_text: if is_missing { "Thiếu driver".into() } else { "Đã nạp".into() },
+                status_text: if is_missing { "Thiếu trình điều khiển".into() } else { "Đã kích hoạt".into() },
                 details: Some(format!("Class: {}", class_hex)),
             });
         }
@@ -329,11 +328,11 @@ pub fn scan_full_hardware_devices() -> Vec<FullHardwareDevice> {
                 type_name: "usb".into(),
                 name: product,
                 vendor: manufacturer,
-                driver: driver.unwrap_or_else(|| "Chưa nạp driver".into()),
+                driver: driver.unwrap_or_else(|| "Chưa có trình điều khiển".into()),
                 version: "USB Bus".into(),
                 pci_id: Some(format!("{:04x}:{:04x}", vendor_id, device_id)),
                 status: if is_missing { "missing".into() } else { "active".into() },
-                status_text: if is_missing { "Thiếu driver".into() } else { "Đã nạp".into() },
+                status_text: if is_missing { "Thiếu trình điều khiển".into() } else { "Đã kích hoạt".into() },
                 details: None,
             });
         }
@@ -492,160 +491,6 @@ pub fn scan_physical_disks() -> Vec<PhysicalDiskInfo> {
     result
 }
 
-// ── DISK SMART HEALTH CHECK (SMARTCTL INTEGRATION) ──────────────────────
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SmartHealthData {
-    pub installed: bool,
-    pub supported: bool,
-    pub passed: bool,
-    pub wear_level_percent: Option<u32>,
-    pub temperature_c: Option<u32>,
-    pub power_on_hours: Option<u64>,
-    pub power_cycles: Option<u64>,
-    pub model_name: Option<String>,
-    pub serial_number: Option<String>,
-    pub firmware_version: Option<String>,
-    pub error_msg: Option<String>,
-}
-
-fn fetch_smartctl_json(dev_path: &str) -> Result<serde_json::Value, String> {
-    let output = Command::new("smartctl")
-        .args(["-a", "-j", dev_path])
-        .output();
-
-    if let Ok(out) = output {
-        if let Ok(v) = serde_json::from_slice::<serde_json::Value>(&out.stdout) {
-            let has_perm_error = v.get("smartctl")
-                .and_then(|s| s.get("messages"))
-                .and_then(|m| m.as_array())
-                .map_or(false, |msgs| {
-                    msgs.iter().any(|m| {
-                        m.get("string")
-                            .and_then(|s| s.as_str())
-                            .map_or(false, |str_val| str_val.contains("Permission denied"))
-                    })
-                });
-            if !has_perm_error {
-                return Ok(v);
-            }
-        }
-    }
-
-    let stdout = privileged::run_privileged_action_with_output("smart", dev_path)?;
-    serde_json::from_str(&stdout).map_err(|e| format!("Failed to parse smartctl JSON: {e}"))
-}
-
-#[tauri::command]
-pub fn get_disk_smart_health(dev_path: String) -> SmartHealthData {
-    // Check if smartctl exists
-    let which_check = Command::new("which").arg("smartctl").output();
-    let installed = which_check.map(|out| out.status.success()).unwrap_or(false);
-
-    if !installed {
-        return SmartHealthData {
-            installed: false,
-            supported: false,
-            passed: false,
-            wear_level_percent: None,
-            temperature_c: None,
-            power_on_hours: None,
-            power_cycles: None,
-            model_name: None,
-            serial_number: None,
-            firmware_version: None,
-            error_msg: Some("Chưa cài đặt gói smartmontools (chạy sudo dnf install smartmontools)".into()),
-        };
-    }
-
-    let json = match fetch_smartctl_json(&dev_path) {
-        Ok(v) => v,
-        Err(e) => {
-            return SmartHealthData {
-                installed: true,
-                supported: false,
-                passed: false,
-                wear_level_percent: None,
-                temperature_c: None,
-                power_on_hours: None,
-                power_cycles: None,
-                model_name: None,
-                serial_number: None,
-                firmware_version: None,
-                error_msg: Some(e),
-            };
-        }
-    };
-
-    let supported = json.get("smart_support")
-        .and_then(|s| s.get("available"))
-        .and_then(|a| a.as_bool())
-        .unwrap_or(false);
-
-    let passed = json.get("smart_status")
-        .and_then(|s| s.get("passed"))
-        .and_then(|p| p.as_bool())
-        .unwrap_or(false);
-
-    let model_name = json.get("model_name").and_then(|s| s.as_str()).map(|s| s.to_string());
-    let serial_number = json.get("serial_number").and_then(|s| s.as_str()).map(|s| s.to_string());
-    let firmware_version = json.get("firmware_version").and_then(|s| s.as_str()).map(|s| s.to_string());
-
-    // Temperature (NVMe or ATA)
-    let temperature_c = json.get("temperature")
-        .and_then(|t| t.get("current"))
-        .and_then(|c| c.as_u64())
-        .or_else(|| {
-            json.get("nvme_smart_health_information_log")
-                .and_then(|n| n.get("temperature"))
-                .and_then(|c| c.as_u64())
-        })
-        .map(|c| c as u32);
-
-    // Wear Level % (percentage_used for NVMe or Endurance Used)
-    let wear_level_percent = json.get("nvme_smart_health_information_log")
-        .and_then(|n| n.get("percentage_used"))
-        .and_then(|p| p.as_u64())
-        .or_else(|| {
-            json.get("endurance_used")
-                .and_then(|e| e.get("current_percent"))
-                .and_then(|p| p.as_u64())
-        })
-        .map(|p| p as u32);
-
-    // Power On Hours
-    let power_on_hours = json.get("power_on_time")
-        .and_then(|p| p.get("hours"))
-        .and_then(|h| h.as_u64())
-        .or_else(|| {
-            json.get("nvme_smart_health_information_log")
-                .and_then(|n| n.get("power_on_hours"))
-                .and_then(|h| h.as_u64())
-        });
-
-    // Power Cycles
-    let power_cycles = json.get("power_cycle_count")
-        .and_then(|c| c.as_u64())
-        .or_else(|| {
-            json.get("nvme_smart_health_information_log")
-                .and_then(|n| n.get("power_cycles"))
-                .and_then(|c| c.as_u64())
-        });
-
-    SmartHealthData {
-        installed: true,
-        supported,
-        passed,
-        wear_level_percent,
-        temperature_c,
-        power_on_hours,
-        power_cycles,
-        model_name,
-        serial_number,
-        firmware_version,
-        error_msg: None,
-    }
-}
 
 // ── MISSING FIRMWARE BLOB SCANNER ───────────────────────────────────────
 
