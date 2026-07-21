@@ -7,15 +7,11 @@ import {
   Clock3,
   MonitorCog,
   Ruler,
-  Folder,
   Gamepad2,
-  Globe,
   Home,
   Maximize2,
-  MessageCircle,
   Minimize2,
   Settings2,
-  Terminal,
   Wifi,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -24,13 +20,9 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useSystemStore } from "../store/useSystemStore";
 
 const NAV_BUTTONS = [
-  { icon: Home,          label: "Home",       page: "dashboard" as const },
-  { icon: Settings2,    label: "MSI Center", page: "msi" as const },
-  { icon: Gamepad2,      label: "Game Mode",  page: "game" as const },
-  { icon: Globe,         label: "Browser" },
-  { icon: Terminal,      label: "Terminal" },
-  { icon: MessageCircle, label: "Chat" },
-  { icon: Folder,        label: "Files" },
+  { icon: Home,       label: "Home",       page: "dashboard" as const },
+  { icon: Settings2,  label: "MSI Center", page: "msi" as const },
+  { icon: Gamepad2,   label: "Game Mode",  page: "game" as const },
 ];
 
 function BatteryIcon({ percent, charging }: { percent: number; charging: boolean }) {

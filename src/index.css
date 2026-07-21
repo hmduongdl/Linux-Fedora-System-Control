@@ -25,7 +25,7 @@
   --pink: #ec4899;
   --bg-dark: #0a0a0f;
   --panel-bg: #15151e;
-  
+
   --accent-purple: #8b5cf6;
   --accent-purple-strong: #a855f7;
   --color-bg-primary: #0A0B10;
@@ -80,9 +80,18 @@ body {
   font-weight: 700;
 }
 
-.custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.2); border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.2);
+  border-radius: 10px;
+}
 
 .connected-device-list {
   overscroll-behavior: contain;
@@ -93,17 +102,42 @@ body {
   font-weight: 700;
 }
 
-.glow-cyan { text-shadow: 0 0 8px rgba(34, 211, 238, 0.4); }
-.glow-pink { text-shadow: 0 0 8px rgba(236, 72, 153, 0.4); }
-.glow-purple { text-shadow: 0 0 8px rgba(139, 92, 246, 0.4); }
+.glow-cyan {
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
+}
 
-.progress-cyan { background: var(--cyan); }
-.progress-purple { background: var(--primary); }
-.progress-pink { background: var(--pink); }
+.glow-pink {
+  text-shadow: 0 0 8px rgba(236, 72, 153, 0.4);
+}
+
+.glow-purple {
+  text-shadow: 0 0 8px rgba(139, 92, 246, 0.4);
+}
+
+.progress-cyan {
+  background: var(--cyan);
+}
+
+.progress-purple {
+  background: var(--primary);
+}
+
+.progress-pink {
+  background: var(--pink);
+}
 
 @keyframes cache-cleaned-flash {
-  0%, 100% { opacity: .35; box-shadow: none; }
-  50% { opacity: 1; box-shadow: 0 0 8px rgba(34, 197, 94, .9); }
+
+  0%,
+  100% {
+    opacity: .35;
+    box-shadow: none;
+  }
+
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 8px rgba(34, 197, 94, .9);
+  }
 }
 
 .progress-cache-cleaned {
@@ -167,14 +201,21 @@ body {
   .dashboard-columns {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .dashboard-left-area { grid-column: span 2; }
+
+  .dashboard-left-area {
+    grid-column: span 2;
+  }
 }
 
 @media (max-width: 600px) {
   .dashboard-columns {
     grid-template-columns: minmax(0, 1fr);
   }
-  .dashboard-left-area { grid-column: auto; grid-template-columns: minmax(0, 1fr); }
+
+  .dashboard-left-area {
+    grid-column: auto;
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .dashboard-column {
@@ -189,7 +230,7 @@ body {
 /* A column may be shorter than its content when the dock or the shortcut row
    takes space. Never squeeze cards: shrinking a flex item made its children
    paint outside the panel (Audio upward, Display controls downward). */
-.dashboard-column > * {
+.dashboard-column>* {
   flex-shrink: 0;
 }
 
@@ -314,17 +355,17 @@ body {
 /* The 16:9 media card deliberately gets the visual priority in fullscreen.
    Keep Connected Devices compact and scroll its list instead of letting the
    card extend below the shortcut row. */
-.dashboard-fullscreen .system-metrics-content > .grid {
+.dashboard-fullscreen .system-metrics-content>.grid {
   min-height: clamp(94px, 10vh, 128px);
 }
 
-.dashboard-fullscreen .system-metrics-content > .grid > .rounded-lg,
-.dashboard-fullscreen .system-metrics-content > .grid > .group > .rounded-lg {
+.dashboard-fullscreen .system-metrics-content>.grid>.rounded-lg,
+.dashboard-fullscreen .system-metrics-content>.grid>.group>.rounded-lg {
   height: 100%;
 }
 
-.dashboard-fullscreen .session-tools-widget > .widget-content,
-.dashboard-fullscreen .top-processes-widget > .widget-content {
+.dashboard-fullscreen .session-tools-widget>.widget-content,
+.dashboard-fullscreen .top-processes-widget>.widget-content {
   overflow: hidden;
   padding-right: 2px;
 }
@@ -346,13 +387,28 @@ body {
     grid-template-rows: auto minmax(104px, 1fr);
   }
 
-  .dashboard-columns .app-brand { min-height: 38px; }
-  .dashboard-columns .app-brand-logo { width: 36px; height: 36px; }
-  .display-layout-map { min-height: 76px; }
-  .system-metrics-content { gap: 7px; }
-  .system-metrics-bars { gap: 5px; }
+  .dashboard-columns .app-brand {
+    min-height: 38px;
+  }
 
-  .system-metrics-bars > div > div:last-child {
+  .dashboard-columns .app-brand-logo {
+    width: 36px;
+    height: 36px;
+  }
+
+  .display-layout-map {
+    min-height: 76px;
+  }
+
+  .system-metrics-content {
+    gap: 7px;
+  }
+
+  .system-metrics-bars {
+    gap: 5px;
+  }
+
+  .system-metrics-bars>div>div:last-child {
     margin-top: 2px;
     height: 5px;
   }
@@ -380,21 +436,28 @@ body {
     overflow: visible;
   }
 
-  .display-layout-widget { max-height: clamp(210px, 30vh, 270px); }
-  .display-layout-widget > .widget-content {
+  .display-layout-widget {
+    max-height: clamp(210px, 30vh, 270px);
+  }
+
+  .display-layout-widget>.widget-content {
     overflow-y: auto;
     overscroll-behavior: contain;
     padding-right: 2px;
   }
 
-  .display-layout-map { min-height: 64px; }
+  .display-layout-map {
+    min-height: 64px;
+  }
 
   .dashboard-right-column {
     height: auto;
     overflow: visible;
   }
 
-  .top-process-list { row-gap: 5px; }
+  .top-process-list {
+    row-gap: 5px;
+  }
 }
 
 @media (max-width: 600px) {
@@ -499,16 +562,46 @@ body {
   padding: 0 clamp(8px, .8vw, 13px);
 }
 
-.app-brand-status span + span { border-left: 1px solid rgba(255, 255, 255, .11); }
-.app-brand-status b { color: #f1f5f9; }
-.app-brand-status small { max-width: 110px; overflow: hidden; color: #94a3b8; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.app-brand-status span+span {
+  border-left: 1px solid rgba(255, 255, 255, .11);
+}
 
-.app-brand-status span:first-child svg { color: #a78bfa; }
-.app-brand-status span:nth-child(2) svg { color: var(--cyan); }
-.app-brand-status span:nth-child(3) svg { color: var(--pink); }
-.app-brand-status span:nth-child(4) svg { color: #34d399; }
-.app-brand-status span:nth-child(5) svg { color: #34d399; }
-.app-brand-status span:nth-child(6) svg { color: #f472b6; }
+.app-brand-status b {
+  color: #f1f5f9;
+}
+
+.app-brand-status small {
+  max-width: 110px;
+  overflow: hidden;
+  color: #94a3b8;
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-brand-status span:first-child svg {
+  color: #a78bfa;
+}
+
+.app-brand-status span:nth-child(2) svg {
+  color: var(--cyan);
+}
+
+.app-brand-status span:nth-child(3) svg {
+  color: var(--pink);
+}
+
+.app-brand-status span:nth-child(4) svg {
+  color: #34d399;
+}
+
+.app-brand-status span:nth-child(5) svg {
+  color: #34d399;
+}
+
+.app-brand-status span:nth-child(6) svg {
+  color: #f472b6;
+}
 
 .app-brand-logo {
   width: clamp(38px, 4.4vh, 50px);
@@ -636,8 +729,8 @@ body {
   min-height: auto;
 }
 
-.dashboard-fullscreen .session-tools-widget > .widget-content,
-.dashboard-fullscreen .display-layout-widget > .widget-content {
+.dashboard-fullscreen .session-tools-widget>.widget-content,
+.dashboard-fullscreen .display-layout-widget>.widget-content {
   overflow-y: auto;
   overscroll-behavior: contain;
   padding-right: 2px;
@@ -656,6 +749,7 @@ body {
 /* Short 16/20-inch laptop and desktop panels: preserve the three columns,
    compact the upper cards, then let dense content scroll inside its card. */
 @media (max-height: 900px) and (min-width: 1101px) {
+
   .dashboard-fullscreen,
   .game-page-main-fullscreen,
   .msi-page-fullscreen {
@@ -663,15 +757,28 @@ body {
     --fs-footer-clearance: 24px;
   }
 
-  .dashboard-fullscreen .media-player-widget { flex-basis: clamp(220px, 22vh, 260px); }
-  .dashboard-fullscreen .display-layout-widget { flex-basis: clamp(260px, 34vh, 310px); min-height: clamp(260px, 34vh, 310px); }
-  .dashboard-fullscreen .display-layout-map { min-height: clamp(112px, 15vh, 148px); }
-  .dashboard-fullscreen .session-tools-widget { flex-basis: clamp(230px, 29vh, 285px); }
+  .dashboard-fullscreen .media-player-widget {
+    flex-basis: clamp(220px, 22vh, 260px);
+  }
+
+  .dashboard-fullscreen .display-layout-widget {
+    flex-basis: clamp(260px, 34vh, 310px);
+    min-height: clamp(260px, 34vh, 310px);
+  }
+
+  .dashboard-fullscreen .display-layout-map {
+    min-height: clamp(112px, 15vh, 148px);
+  }
+
+  .dashboard-fullscreen .session-tools-widget {
+    flex-basis: clamp(230px, 29vh, 285px);
+  }
 }
 
 /* Medium-sized 16-inch laptop screens (height 901px to 1199px) at high-DPI scaling:
    balance widget size and gap to ensure Top Processes and charts have enough room. */
 @media (min-height: 901px) and (max-height: 1199px) and (min-width: 1101px) {
+
   .dashboard-fullscreen,
   .game-page-main-fullscreen,
   .msi-page-fullscreen {
@@ -679,30 +786,66 @@ body {
     --fs-footer-clearance: 36px;
   }
 
-  .dashboard-fullscreen .media-player-widget { flex-basis: clamp(230px, 24vh, 280px); }
-  .dashboard-fullscreen .display-layout-widget { flex-basis: clamp(280px, 30vh, 340px); min-height: clamp(280px, 30vh, 340px); }
-  .dashboard-fullscreen .display-layout-map { min-height: clamp(120px, 13vh, 160px); }
-  .dashboard-fullscreen .session-tools-widget { flex-basis: clamp(250px, 27vh, 310px); }
+  .dashboard-fullscreen .media-player-widget {
+    flex-basis: clamp(230px, 24vh, 280px);
+  }
 
-  .game-page-fullscreen .dashboard-column:nth-child(2) > :last-child { flex-basis: clamp(170px, 23vh, 210px); }
+  .dashboard-fullscreen .display-layout-widget {
+    flex-basis: clamp(280px, 30vh, 340px);
+    min-height: clamp(280px, 30vh, 340px);
+  }
 
-  .msi-page-fullscreen .msi-metrics-row { flex-basis: clamp(96px, 13vh, 128px); }
-  .msi-page-fullscreen .msi-card { padding: 14px; }
-  .msi-page-fullscreen .msi-option-compact { min-height: 38px; font-size: 8.5px; }
+  .dashboard-fullscreen .display-layout-map {
+    min-height: clamp(120px, 13vh, 160px);
+  }
+
+  .dashboard-fullscreen .session-tools-widget {
+    flex-basis: clamp(250px, 27vh, 310px);
+  }
+
+  .game-page-fullscreen .dashboard-column:nth-child(2)> :last-child {
+    flex-basis: clamp(170px, 23vh, 210px);
+  }
+
+  .msi-page-fullscreen .msi-metrics-row {
+    flex-basis: clamp(96px, 13vh, 128px);
+  }
+
+  .msi-page-fullscreen .msi-card {
+    padding: 14px;
+  }
+
+  .msi-page-fullscreen .msi-option-compact {
+    min-height: 38px;
+    font-size: 8.5px;
+  }
 }
 
 /* Larger 24/27-inch and high-resolution screens get more chart/list space. */
 @media (min-height: 1200px) and (min-width: 1400px) {
+
   .dashboard-fullscreen,
   .game-page-main-fullscreen,
   .msi-page-fullscreen {
     --fs-gap: clamp(14px, 1.1vw, 24px);
   }
 
-  .dashboard-fullscreen .media-player-widget { flex-basis: clamp(280px, 25vh, 360px); }
-  .dashboard-fullscreen .display-layout-widget { flex-basis: clamp(360px, 32vh, 440px); min-height: clamp(360px, 32vh, 440px); }
-  .dashboard-fullscreen .display-layout-map { min-height: clamp(160px, 17vh, 230px); }
-  .dashboard-fullscreen .session-tools-widget { flex-basis: clamp(350px, 30vh, 430px); }
+  .dashboard-fullscreen .media-player-widget {
+    flex-basis: clamp(280px, 25vh, 360px);
+  }
+
+  .dashboard-fullscreen .display-layout-widget {
+    flex-basis: clamp(360px, 32vh, 440px);
+    min-height: clamp(360px, 32vh, 440px);
+  }
+
+  .dashboard-fullscreen .display-layout-map {
+    min-height: clamp(160px, 17vh, 230px);
+  }
+
+  .dashboard-fullscreen .session-tools-widget {
+    flex-basis: clamp(350px, 30vh, 430px);
+  }
 }
 
 /* A QHD (2560×1440) viewport has enough room for the information rows but
@@ -722,31 +865,54 @@ body {
   min-height: auto;
 }
 
-.dashboard-fullscreen .display-layout-widget > .widget-content {
+.dashboard-fullscreen .display-layout-widget>.widget-content {
   overflow: visible;
 }
 
 /* Retain the current three-column composition down to 1100 CSS pixels. Below
    that threshold the existing two/one-column fallbacks take over safely. */
 @media (min-width: 1101px) {
-  .dashboard-fullscreen .dashboard-columns { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .dashboard-fullscreen .dashboard-left-area { grid-column: span 2; }
+  .dashboard-fullscreen .dashboard-columns {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .dashboard-fullscreen .dashboard-left-area {
+    grid-column: span 2;
+  }
 }
 
 @media (max-width: 1360px) {
-  .dashboard-fullscreen .app-brand-status { padding: 6px 9px; font-size: 9px; }
-  .dashboard-fullscreen .app-brand-status span { padding-inline: 7px; }
-  .dashboard-fullscreen .app-brand-status small { max-width: 72px; }
+  .dashboard-fullscreen .app-brand-status {
+    padding: 6px 9px;
+    font-size: 9px;
+  }
+
+  .dashboard-fullscreen .app-brand-status span {
+    padding-inline: 7px;
+  }
+
+  .dashboard-fullscreen .app-brand-status small {
+    max-width: 72px;
+  }
 }
 
 @media (max-width: 1100px) {
+
   .dashboard-fullscreen .app-brand-status span:nth-child(2),
-  .dashboard-fullscreen .app-brand-status small { display: none; }
+  .dashboard-fullscreen .app-brand-status small {
+    display: none;
+  }
 }
 
 @media (max-width: 420px) {
-  .app-brand { flex-wrap: wrap; }
-  .app-brand-socials { width: 100%; margin-left: 0; }
+  .app-brand {
+    flex-wrap: wrap;
+  }
+
+  .app-brand-socials {
+    width: 100%;
+    margin-left: 0;
+  }
 }
 
 .metric-tile {
@@ -773,7 +939,11 @@ body {
   white-space: nowrap;
 }
 
-.metric-tile small { color: #777797; font-size: 9px; font-weight: 400; }
+.metric-tile small {
+  color: #777797;
+  font-size: 9px;
+  font-weight: 400;
+}
 
 .skeleton {
   border-radius: 5px;
@@ -790,126 +960,615 @@ body {
   --volume: 0%;
   height: 6px;
   border-radius: 999px;
-  background: linear-gradient(to right, #22d3ee 0 var(--volume), rgba(255,255,255,.1) var(--volume) 100%);
+  background: linear-gradient(to right, #22d3ee 0 var(--volume), rgba(255, 255, 255, .1) var(--volume) 100%);
   transition: filter .18s ease;
   touch-action: none;
 }
-.volume-slider:hover { filter: brightness(1.12); }
-.volume-slider:active { filter: brightness(1.2); }
-.volume-slider::-webkit-slider-runnable-track { height: 6px; background: transparent; border-radius: 999px; }
-.volume-slider::-webkit-slider-thumb {
-  width: 14px; height: 14px; margin-top: -4px; appearance: none; border: 0; border-radius: 50%;
-  background: #eaffff; box-shadow: 0 0 0 0 rgba(34,211,238,0); transition: transform .14s ease, box-shadow .14s ease;
+
+.volume-slider:hover {
+  filter: brightness(1.12);
 }
-.volume-slider:hover::-webkit-slider-thumb, .volume-slider:active::-webkit-slider-thumb { transform: scale(1.15); box-shadow: 0 0 0 4px rgba(34,211,238,.16); }
-.volume-slider::-moz-range-track { height: 6px; background: transparent; border-radius: 999px; }
-.volume-slider::-moz-range-progress { height: 6px; background: #22d3ee; border-radius: 999px; }
-.volume-slider::-moz-range-thumb { width: 14px; height: 14px; border: 0; border-radius: 50%; background: #eaffff; }
+
+.volume-slider:active {
+  filter: brightness(1.2);
+}
+
+.volume-slider::-webkit-slider-runnable-track {
+  height: 6px;
+  background: transparent;
+  border-radius: 999px;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  width: 14px;
+  height: 14px;
+  margin-top: -4px;
+  appearance: none;
+  border: 0;
+  border-radius: 50%;
+  background: #eaffff;
+  box-shadow: 0 0 0 0 rgba(34, 211, 238, 0);
+  transition: transform .14s ease, box-shadow .14s ease;
+}
+
+.volume-slider:hover::-webkit-slider-thumb,
+.volume-slider:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 4px rgba(34, 211, 238, .16);
+}
+
+.volume-slider::-moz-range-track {
+  height: 6px;
+  background: transparent;
+  border-radius: 999px;
+}
+
+.volume-slider::-moz-range-progress {
+  height: 6px;
+  background: #22d3ee;
+  border-radius: 999px;
+}
+
+.volume-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: 0;
+  border-radius: 50%;
+  background: #eaffff;
+}
 
 .power-profile-indicator {
   left: 4px;
   width: calc((100% - 8px) / 3);
   transition: transform .38s cubic-bezier(.22, 1, .36, 1), box-shadow .3s ease;
 }
-.power-profile-icon { animation: profile-icon-arrive .42s cubic-bezier(.22, 1, .36, 1); }
-.audio-output-menu { transform-origin: top; animation: dropdown-arrive .18s cubic-bezier(.22, 1, .36, 1); }
-.audio-mute-button svg:not(.animate-spin) { animation: audio-icon-swap .32s cubic-bezier(.22, 1, .36, 1); }
-.audio-mute-button.is-live { box-shadow: 0 0 16px rgba(34, 211, 238, .08); }
-.audio-mute-button.is-muted { box-shadow: 0 0 16px rgba(251, 191, 36, .08); }
-@keyframes profile-icon-arrive { from { opacity: .2; transform: scale(.65) rotate(-14deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
-@keyframes dropdown-arrive { from { opacity: 0; transform: translateY(-5px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
-@keyframes audio-icon-swap { 0% { opacity: 0; transform: scale(.55) rotate(-12deg); } 70% { transform: scale(1.12) rotate(2deg); } 100% { opacity: 1; transform: scale(1) rotate(0); } }
 
-@media (prefers-reduced-motion: reduce) {
-  .power-profile-indicator, .audio-output-menu, .audio-mute-button svg, .power-profile-icon { animation: none; transition-duration: .01ms; }
+.power-profile-icon {
+  animation: profile-icon-arrive .42s cubic-bezier(.22, 1, .36, 1);
 }
 
-.msi-page { width: 100%; max-width: 100%; min-width: 0; height: calc(100% - var(--dock-height, 68px) - 16px); overflow-y: auto; overflow-x: hidden; box-sizing: border-box; background: radial-gradient(circle at 80% 0%, rgba(236,28,111,.07), transparent 34%), #0a0a0f; padding: clamp(8px, 1.2vw, 24px); padding-bottom: 24px; }
-.msi-page .dashboard-column > * { max-width: 100%; }
-.msi-monitor-layout { display: flex; min-width: 0; min-height: 0; flex-direction: column; gap: 12px; }
-.msi-metrics-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; min-width: 0; min-height: 0; align-items: start; }
-.msi-metrics-row > .msi-card { width: 100%; height: clamp(114px, calc(19vh - 18px), 142px); max-height: 142px; }
-.msi-details-row { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); grid-template-rows: max-content max-content; gap: 12px; min-width: 0; min-height: 0; align-content: start; align-items: stretch; }
-.msi-details-row > .msi-card { width: 100%; }
-.msi-details-row > .msi-hardware-control,
-.msi-details-row > .msi-operating-card { height: 100%; }
-.msi-utility-row { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.7fr); align-items: stretch; gap: 12px; min-width: 0; min-height: 0; }
-.msi-utility-row > .msi-card { width: 100%; }
-.msi-utility-row > .msi-battery-master { height: auto; align-self: start; }
-.msi-utility-stack { display: flex; min-width: 0; min-height: 0; max-width: 100%; flex-direction: column; gap: 12px; overflow: hidden; }
-.msi-utility-stack > .msi-card { width: 100%; }
-.msi-keyboard-card { flex: 0 0 auto; min-height: 74px; }
-.msi-operating-card { flex: 1 1 0; }
-.msi-utility-row .msi-battery-ring { width: min(clamp(72px, 13vh, 122px), 58%); height: auto; aspect-ratio: 1; flex: 0 0 auto; }
-.msi-utility-row .msi-battery-ring strong { font-size: clamp(24px, 3.2vh, 32px); }
-.msi-utility-row .msi-battery-ring span { font-size: 7px; }
-.msi-card { min-width: 0; border: 1px solid rgba(148,163,184,.16); border-radius: 14px; background: linear-gradient(145deg, rgba(24,25,32,.96), rgba(15,16,21,.96)); box-shadow: 0 16px 45px rgba(0,0,0,.18); }
-.msi-title { margin-top: 3px; font-size: clamp(28px, 4vw, 46px); line-height: 1; font-weight: 800; text-transform: uppercase; letter-spacing: -.04em; }
-.msi-eyebrow, .msi-label { color: #ec1c6f; font-size: 10px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
-.msi-label { margin-bottom: 6px; }
-.msi-label-cyan { color: #22d3ee; }
-.msi-section-title { font-size: clamp(12px, 1.15vw, 17px); font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
-.msi-number { font-family: Geist, monospace; font-size: clamp(32px, 4vw, 48px); font-weight: 800; letter-spacing: -.06em; }
-.msi-button { display: inline-flex; align-items: center; gap: 8px; border-radius: 8px; background: #ec1c6f; padding: 12px 18px; color: white; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .12em; }
-.msi-option { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 58px; border: 1px solid rgba(255,255,255,.1); border-radius: 9px; color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; transition: .2s; }
-.msi-option:hover:not(:disabled) { border-color: rgba(236,28,111,.65); color: #f472b6; }
-.msi-option:disabled { cursor: not-allowed; opacity: .38; }
-.msi-option.active-pink { border-color: #ec1c6f; background: rgba(236,28,111,.12); color: #ec1c6f; box-shadow: 0 0 22px rgba(236,28,111,.12); }
-.msi-option.active-cyan { border-color: #22d3ee; background: rgba(34,211,238,.1); color: #22d3ee; }
-.msi-option-compact { min-height: 42px; font-size: 9px; }
-.battery-ring { display: flex; height: 174px; width: 174px; flex-direction: column; align-items: center; justify-content: center; border-radius: 999px; background: radial-gradient(circle at center, #16161e 57%, transparent 58%), conic-gradient(#ec1c6f var(--battery), rgba(255,255,255,.08) 0); box-shadow: 0 0 30px rgba(236,28,111,.18); }
-.battery-ring strong { font-size: 42px; font-weight: 800; }
-.battery-ring span { color: #94a3b8; font-size: 10px; letter-spacing: .16em; }
-.battery-ring-compact { width: clamp(112px, 16vh, 142px); height: clamp(112px, 16vh, 142px); }
-.battery-ring-compact strong { font-size: clamp(28px, 4vh, 36px); }
-.battery-ring-compact span { font-size: 8px; }
-.msi-battery-ring { width: clamp(136px, 20vh, 168px); height: clamp(136px, 20vh, 168px); }
-.msi-battery-ring strong { font-size: clamp(32px, 4.8vh, 44px); }
-.msi-battery-ring { background: #16161e; }
-.battery-ring svg { display: block; width: 100%; height: 100%; transform: rotate(-90deg); }
-.battery-ring-track, .battery-ring-progress { fill: none; stroke-width: 8; }
-.battery-ring-track { stroke: rgba(255,255,255,.08); }
-.battery-ring-progress { stroke: #ec1c6f; stroke-dasharray: 100; stroke-dashoffset: calc(100 - var(--battery-value)); stroke-linecap: round; }
-.battery-ring-percent, .battery-ring-status { transform: rotate(90deg); transform-origin: 50px 50px; text-anchor: middle; }
-.battery-ring-percent { fill: #e4e1e9; font: 800 15px Geist, monospace; }
-.battery-ring-status { fill: #94a3b8; font: 7px Geist, sans-serif; letter-spacing: 1px; }
-.keyboard-brightness-slider { display: block; box-sizing: border-box; max-width: 100%; height: 5px; cursor: pointer; accent-color: #ec1c6f; }
-.usage-ring { display: grid; width: min(clamp(44px, 5vw, 62px), 100%); height: auto; aspect-ratio: 1; grid-template-columns: auto auto; place-content: center; border-radius: 999px; background: radial-gradient(circle, #14151d 57%, transparent 59%), conic-gradient(var(--ring-color) var(--usage), rgba(148,163,184,.18) 0); box-shadow: 0 0 14px color-mix(in srgb, var(--ring-color) 12%, transparent); }
-.usage-ring strong { font: 700 18px/1 Geist, monospace; color: #e4e1e9; }
-.usage-ring span { align-self: end; color: #94a3b8; font-size: 8px; }
-.snapshot-list { height: 100%; min-height: 0; overflow-y: auto; overflow-x: hidden; border: 1px solid rgba(255,255,255,.06); border-radius: 8px; background: rgba(0,0,0,.12); }
-.resource-progress { width: var(--target-width); animation: resource-reset-rise 3s cubic-bezier(.22,.8,.32,1); }
-@keyframes resource-reset-rise { 0%, 45% { width: 0; opacity: .55; } 100% { width: var(--target-width); opacity: 1; } }
+.audio-output-menu {
+  transform-origin: top;
+  animation: dropdown-arrive .18s cubic-bezier(.22, 1, .36, 1);
+}
+
+.audio-mute-button svg:not(.animate-spin) {
+  animation: audio-icon-swap .32s cubic-bezier(.22, 1, .36, 1);
+}
+
+.audio-mute-button.is-live {
+  box-shadow: 0 0 16px rgba(34, 211, 238, .08);
+}
+
+.audio-mute-button.is-muted {
+  box-shadow: 0 0 16px rgba(251, 191, 36, .08);
+}
+
+@keyframes profile-icon-arrive {
+  from {
+    opacity: .2;
+    transform: scale(.65) rotate(-14deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+@keyframes dropdown-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(-5px) scale(.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes audio-icon-swap {
+  0% {
+    opacity: 0;
+    transform: scale(.55) rotate(-12deg);
+  }
+
+  70% {
+    transform: scale(1.12) rotate(2deg);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .power-profile-indicator,
+  .audio-output-menu,
+  .audio-mute-button svg,
+  .power-profile-icon {
+    animation: none;
+    transition-duration: .01ms;
+  }
+}
+
+.msi-page {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: calc(100% - var(--dock-height, 68px) - 16px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  background: radial-gradient(circle at 80% 0%, rgba(236, 28, 111, .07), transparent 34%), #0a0a0f;
+  padding: clamp(8px, 1.2vw, 24px);
+  padding-bottom: 24px;
+}
+
+.msi-page .dashboard-column>* {
+  max-width: 100%;
+}
+
+.msi-monitor-layout {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.msi-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+  align-items: start;
+}
+
+.msi-metrics-row>.msi-card {
+  width: 100%;
+  height: clamp(114px, calc(19vh - 18px), 142px);
+  max-height: 142px;
+}
+
+.msi-details-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  grid-template-rows: max-content max-content;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+  align-content: start;
+  align-items: stretch;
+}
+
+.msi-details-row>.msi-card {
+  width: 100%;
+}
+
+.msi-details-row>.msi-hardware-control,
+.msi-details-row>.msi-operating-card {
+  height: 100%;
+}
+
+.msi-utility-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, .8fr) minmax(0, 1.7fr);
+  align-items: stretch;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.msi-utility-row>.msi-card {
+  width: 100%;
+}
+
+.msi-utility-row>.msi-battery-master {
+  height: auto;
+  align-self: start;
+}
+
+.msi-utility-stack {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.msi-utility-stack>.msi-card {
+  width: 100%;
+}
+
+.msi-keyboard-card {
+  flex: 0 0 auto;
+  min-height: 74px;
+}
+
+.msi-operating-card {
+  flex: 1 1 0;
+}
+
+.msi-utility-row .msi-battery-ring {
+  width: 150px;
+  height: 150px;
+  flex: 0 0 auto;
+}
+
+.msi-utility-row .msi-battery-ring strong {
+  font-size: clamp(24px, 3.2vh, 32px);
+}
+
+.msi-utility-row .msi-battery-ring span {
+  font-size: 7px;
+}
+
+.msi-card {
+  min-width: 0;
+  border: 1px solid rgba(148, 163, 184, .16);
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(24, 25, 32, .96), rgba(15, 16, 21, .96));
+  box-shadow: 0 16px 45px rgba(0, 0, 0, .18);
+}
+
+.msi-title {
+  margin-top: 3px;
+  font-size: clamp(28px, 4vw, 46px);
+  line-height: 1;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -.04em;
+}
+
+.msi-eyebrow,
+.msi-label {
+  color: #ec1c6f;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+.msi-label {
+  margin-bottom: 6px;
+}
+
+.msi-label-cyan {
+  color: #22d3ee;
+}
+
+.msi-section-title {
+  font-size: clamp(12px, 1.15vw, 17px);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.msi-number {
+  font-family: Geist, monospace;
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 800;
+  letter-spacing: -.06em;
+}
+
+.msi-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  background: #ec1c6f;
+  padding: 12px 18px;
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+}
+
+.msi-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 58px;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 9px;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  transition: .2s;
+}
+
+.msi-option:hover:not(:disabled) {
+  border-color: rgba(236, 28, 111, .65);
+  color: #f472b6;
+}
+
+.msi-option:disabled {
+  cursor: not-allowed;
+  opacity: .38;
+}
+
+.msi-option.active-pink {
+  border-color: #ec1c6f;
+  background: rgba(236, 28, 111, .12);
+  color: #ec1c6f;
+  box-shadow: 0 0 22px rgba(236, 28, 111, .12);
+}
+
+.msi-option.active-cyan {
+  border-color: #22d3ee;
+  background: rgba(34, 211, 238, .1);
+  color: #22d3ee;
+}
+
+.msi-option-compact {
+  min-height: 42px;
+  font-size: 9px;
+}
+
+.battery-ring {
+  display: flex;
+  height: 174px;
+  width: 174px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: radial-gradient(circle at center, #16161e 57%, transparent 58%), conic-gradient(#ec1c6f var(--battery), rgba(255, 255, 255, .08) 0);
+  box-shadow: 0 0 30px rgba(236, 28, 111, .18);
+}
+
+.battery-ring strong {
+  font-size: 42px;
+  font-weight: 800;
+}
+
+.battery-ring span {
+  color: #94a3b8;
+  font-size: 10px;
+  letter-spacing: .16em;
+}
+
+.battery-ring-compact {
+  width: clamp(112px, 16vh, 142px);
+  height: clamp(112px, 16vh, 142px);
+}
+
+.battery-ring-compact strong {
+  font-size: clamp(28px, 4vh, 36px);
+}
+
+.battery-ring-compact span {
+  font-size: 8px;
+}
+
+.msi-battery-ring {
+  width: clamp(136px, 20vh, 168px);
+  height: clamp(136px, 20vh, 168px);
+}
+
+.msi-battery-ring strong {
+  font-size: clamp(32px, 4.8vh, 44px);
+}
+
+.msi-battery-ring {
+  background: #16161e;
+}
+
+.battery-ring svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.battery-ring-track,
+.battery-ring-progress {
+  fill: none;
+  stroke-width: 8;
+}
+
+.battery-ring-track {
+  stroke: rgba(255, 255, 255, .08);
+}
+
+.battery-ring-progress {
+  stroke: #ec1c6f;
+  stroke-dasharray: 100;
+  stroke-dashoffset: calc(100 - var(--battery-value));
+  stroke-linecap: round;
+}
+
+.battery-ring-percent,
+.battery-ring-status {
+  transform: rotate(90deg);
+  transform-origin: 50px 50px;
+  text-anchor: middle;
+}
+
+.battery-ring-percent {
+  fill: #e4e1e9;
+  font: 800 15px Geist, monospace;
+}
+
+.battery-ring-status {
+  fill: #94a3b8;
+  font: 7px Geist, sans-serif;
+  letter-spacing: 1px;
+}
+
+.keyboard-brightness-slider {
+  display: block;
+  box-sizing: border-box;
+  max-width: 100%;
+  height: 5px;
+  cursor: pointer;
+  accent-color: #ec1c6f;
+}
+
+.usage-ring {
+  display: grid;
+  width: min(clamp(44px, 5vw, 62px), 100%);
+  height: auto;
+  aspect-ratio: 1;
+  grid-template-columns: auto auto;
+  place-content: center;
+  border-radius: 999px;
+  background: radial-gradient(circle, #14151d 57%, transparent 59%), conic-gradient(var(--ring-color) var(--usage), rgba(148, 163, 184, .18) 0);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--ring-color) 12%, transparent);
+}
+
+.usage-ring strong {
+  font: 700 18px/1 Geist, monospace;
+  color: #e4e1e9;
+}
+
+.usage-ring span {
+  align-self: end;
+  color: #94a3b8;
+  font-size: 8px;
+}
+
+.snapshot-list {
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 1px solid rgba(255, 255, 255, .06);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, .12);
+}
+
+.resource-progress {
+  width: var(--target-width);
+  animation: resource-reset-rise 3s cubic-bezier(.22, .8, .32, 1);
+}
+
+@keyframes resource-reset-rise {
+
+  0%,
+  45% {
+    width: 0;
+    opacity: .55;
+  }
+
+  100% {
+    width: var(--target-width);
+    opacity: 1;
+  }
+}
 
 @media (max-height: 720px) {
-  .msi-card { padding: 12px; }
-  .msi-details-row { gap: 10px; }
-  .snapshot-list { min-height: 150px; }
-  .msi-battery-master { padding: 10px; }
-  .msi-battery-master > div:nth-of-type(2) { padding-block: 2px; }
-  .msi-battery-master > div { margin-top: 6px; }
-  .msi-battery-master .msi-battery-ring { width: clamp(70px, 12vh, 100px); }
-  .msi-keyboard-card { min-height: 62px; padding: 10px; }
-  .msi-keyboard-card .keyboard-brightness-slider { margin-top: 6px; }
-  .msi-utility-stack { gap: 8px; }
-  .msi-utility-row { grid-template-columns: minmax(0, 1fr); }
+  .msi-card {
+    padding: 12px;
+  }
+
+  .msi-details-row {
+    gap: 10px;
+  }
+
+  .snapshot-list {
+    min-height: 150px;
+  }
+
+  .msi-battery-master {
+    padding: 10px;
+  }
+
+  .msi-battery-master>div:nth-of-type(2) {
+    padding-block: 2px;
+  }
+
+  .msi-battery-master>div {
+    margin-top: 6px;
+  }
+
+  .msi-battery-master .msi-battery-ring {
+    width: 130px;
+    height: 130px;
+  }
+
+  .msi-keyboard-card {
+    min-height: 62px;
+    padding: 10px;
+  }
+
+  .msi-keyboard-card .keyboard-brightness-slider {
+    margin-top: 6px;
+  }
+
+  .msi-utility-stack {
+    gap: 8px;
+  }
+
+  .msi-utility-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 @media (max-width: 900px) {
-  .msi-metrics-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .msi-details-row { grid-template-columns: minmax(0, 1fr); }
-  .msi-details-row > .msi-card, .msi-utility-row { grid-column: 1; }
+  .msi-metrics-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .msi-details-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .msi-details-row>.msi-card,
+  .msi-utility-row {
+    grid-column: 1;
+  }
 }
 
 @media (max-width: 600px) {
-  .msi-page { padding-inline: 8px; padding-bottom: 24px; }
-  .msi-metrics-row { gap: 8px; }
-  .msi-details-row, .msi-utility-row { gap: 8px; }
-  .msi-hardware-control, .msi-battery-master, .msi-keyboard-card, .msi-operating-card { padding: 10px; }
-  .msi-hardware-control .msi-option-compact { min-height: 34px; font-size: 8px; }
-  .msi-hardware-control .mt-4 { margin-top: 8px; }
-  .msi-utility-row { grid-template-columns: minmax(0, 1fr); }
-  .msi-utility-stack { gap: 8px; }
+  .msi-page {
+    padding-inline: 8px;
+    padding-bottom: 24px;
+  }
+
+  .msi-metrics-row {
+    gap: 8px;
+  }
+
+  .msi-details-row,
+  .msi-utility-row {
+    gap: 8px;
+  }
+
+  .msi-hardware-control,
+  .msi-battery-master,
+  .msi-keyboard-card,
+  .msi-operating-card {
+    padding: 10px;
+  }
+
+  .msi-hardware-control .msi-option-compact {
+    min-height: 34px;
+    font-size: 8px;
+  }
+
+  .msi-hardware-control .mt-4 {
+    margin-top: 8px;
+  }
+
+  .msi-utility-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .msi-utility-stack {
+    gap: 8px;
+  }
 }
 
 ::-webkit-scrollbar {
@@ -920,6 +1579,7 @@ body {
   * {
     @apply border-border outline-none;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -936,7 +1596,9 @@ body {
   min-height: clamp(40px, 4vh, 52px);
 }
 
-.fullscreen-app-header .app-brand-status { display: flex; }
+.fullscreen-app-header .app-brand-status {
+  display: flex;
+}
 
 /* The dock is part of the app shell, not a fixed/sticky overlay. Its own flex
    row is therefore the lower boundary for every page: page content can scroll
@@ -964,7 +1626,7 @@ body {
   background: #0a0a0f;
 }
 
-.dock-region > .glass-panel {
+.dock-region>.glass-panel {
   width: 100%;
 }
 
@@ -982,13 +1644,13 @@ body {
 
 .game-page-fullscreen .dashboard-columns,
 .game-page-fullscreen .dashboard-column,
-.game-page-fullscreen .dashboard-column > .glass-panel {
+.game-page-fullscreen .dashboard-column>.glass-panel {
   height: auto;
   min-height: auto;
   overflow: visible;
 }
 
-.game-page-fullscreen .dashboard-column > .glass-panel > .widget-content {
+.game-page-fullscreen .dashboard-column>.glass-panel>.widget-content {
   overflow: visible;
 }
 
@@ -1051,7 +1713,7 @@ body {
     gap: clamp(8px, 1.1vh, 14px);
   }
 
-  .msi-page .msi-metrics-row > .msi-card {
+  .msi-page .msi-metrics-row>.msi-card {
     height: 100%;
     min-height: 0;
     max-height: none;
@@ -1066,9 +1728,9 @@ body {
     overflow: hidden;
   }
 
-  .msi-page .msi-details-row > .msi-card,
-  .msi-page .msi-utility-row > .msi-card,
-  .msi-page .msi-utility-stack > .msi-card {
+  .msi-page .msi-details-row>.msi-card,
+  .msi-page .msi-utility-row>.msi-card,
+  .msi-page .msi-utility-stack>.msi-card {
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -1081,7 +1743,7 @@ body {
     overflow: hidden;
   }
 
-  .msi-page .msi-utility-row > .msi-battery-master {
+  .msi-page .msi-utility-row>.msi-battery-master {
     height: 100%;
     min-height: 0;
     align-self: stretch;
@@ -1159,8 +1821,8 @@ body {
     padding: clamp(6px, .8vh, 9px);
   }
 
-  .msi-page .msi-resource-usage > div:nth-child(2),
-  .msi-page .msi-resource-usage > div:nth-child(3) {
+  .msi-page .msi-resource-usage>div:nth-child(2),
+  .msi-page .msi-resource-usage>div:nth-child(3) {
     margin-top: clamp(4px, .55vh, 7px);
   }
 }
@@ -1184,6 +1846,7 @@ body {
 }
 
 @media (max-width: 900px) {
+
   .msi-page,
   .msi-page-fullscreen {
     height: auto;
@@ -1198,7 +1861,7 @@ body {
     overflow: visible;
   }
 
-  .msi-page .msi-metrics-row > .msi-card {
+  .msi-page .msi-metrics-row>.msi-card {
     height: clamp(104px, 17vh, 142px);
   }
 
@@ -1208,9 +1871,9 @@ body {
     overflow: visible;
   }
 
-  .msi-page .msi-details-row > .msi-card,
-  .msi-page .msi-utility-row > .msi-card,
-  .msi-page .msi-utility-stack > .msi-card {
+  .msi-page .msi-details-row>.msi-card,
+  .msi-page .msi-utility-row>.msi-card,
+  .msi-page .msi-utility-stack>.msi-card {
     overflow: visible;
   }
 
@@ -1265,28 +1928,28 @@ body {
   overflow: hidden;
 }
 
-.game-page-fullscreen .dashboard-column > .glass-panel {
+.game-page-fullscreen .dashboard-column>.glass-panel {
   min-height: 0;
   overflow: hidden;
 }
 
-.game-page-fullscreen .dashboard-column:nth-child(1) > .glass-panel,
-.game-page-fullscreen .dashboard-column:nth-child(3) > .glass-panel,
-.game-page-fullscreen .dashboard-column:nth-child(2) > :first-child {
+.game-page-fullscreen .dashboard-column:nth-child(1)>.glass-panel,
+.game-page-fullscreen .dashboard-column:nth-child(3)>.glass-panel,
+.game-page-fullscreen .dashboard-column:nth-child(2)> :first-child {
   flex: 1 1 0;
 }
 
-.game-page-fullscreen .dashboard-column:nth-child(2) > :last-child {
+.game-page-fullscreen .dashboard-column:nth-child(2)> :last-child {
   flex: 0 0 clamp(176px, 24vh, 260px);
 }
 
-.game-page-fullscreen .dashboard-column > .glass-panel > .widget-content {
+.game-page-fullscreen .dashboard-column>.glass-panel>.widget-content {
   overflow-y: auto;
   overscroll-behavior: contain;
   padding-right: 2px;
 }
 
-.game-page-fullscreen .dashboard-column:nth-child(2) > :last-child .widget-content > div {
+.game-page-fullscreen .dashboard-column:nth-child(2)> :last-child .widget-content>div {
   max-height: none;
   min-height: 0;
   overflow: hidden;
@@ -1316,7 +1979,7 @@ body {
   gap: var(--msi-fs-gap);
 }
 
-.msi-page-fullscreen .msi-metrics-row > .msi-card {
+.msi-page-fullscreen .msi-metrics-row>.msi-card {
   height: 100%;
   max-height: none;
 }
@@ -1329,21 +1992,21 @@ body {
   overflow: hidden;
 }
 
-.msi-page-fullscreen .msi-details-row > .msi-card,
+.msi-page-fullscreen .msi-details-row>.msi-card,
 .msi-page-fullscreen .msi-utility-row,
-.msi-page-fullscreen .msi-utility-row > .msi-card,
+.msi-page-fullscreen .msi-utility-row>.msi-card,
 .msi-page-fullscreen .msi-utility-stack {
   min-height: 0;
 }
 
-.msi-page-fullscreen .msi-details-row > .msi-card,
-.msi-page-fullscreen .msi-utility-row > .msi-card,
-.msi-page-fullscreen .msi-utility-stack > .msi-card {
+.msi-page-fullscreen .msi-details-row>.msi-card,
+.msi-page-fullscreen .msi-utility-row>.msi-card,
+.msi-page-fullscreen .msi-utility-stack>.msi-card {
   overflow-y: auto;
   overscroll-behavior: contain;
 }
 
-.msi-page-fullscreen .msi-utility-row > .msi-battery-master {
+.msi-page-fullscreen .msi-utility-row>.msi-battery-master {
   height: 100%;
   align-self: stretch;
 }
@@ -1354,11 +2017,23 @@ body {
 }
 
 @media (max-height: 900px) and (min-width: 901px) {
+
   .game-page-main-fullscreen,
-  .msi-page-fullscreen { padding-bottom: 16px; }
-  .game-page-fullscreen .dashboard-column:nth-child(2) > :last-child { flex-basis: clamp(150px, 22vh, 190px); }
-  .msi-page-fullscreen .msi-metrics-row { flex-basis: clamp(92px, 14vh, 120px); }
-  .msi-page-fullscreen .msi-card { padding: 12px; }
+  .msi-page-fullscreen {
+    padding-bottom: 16px;
+  }
+
+  .game-page-fullscreen .dashboard-column:nth-child(2)> :last-child {
+    flex-basis: clamp(150px, 22vh, 190px);
+  }
+
+  .msi-page-fullscreen .msi-metrics-row {
+    flex-basis: clamp(92px, 14vh, 120px);
+  }
+
+  .msi-page-fullscreen .msi-card {
+    padding: 12px;
+  }
 }
 
 /* Keep these last: the fullscreen sizing rules above are intentionally
@@ -1369,13 +2044,13 @@ body {
 
 .game-page-fullscreen .dashboard-columns,
 .game-page-fullscreen .dashboard-column,
-.game-page-fullscreen .dashboard-column > .glass-panel {
+.game-page-fullscreen .dashboard-column>.glass-panel {
   height: auto;
   min-height: auto;
   overflow: visible;
 }
 
-.game-page-fullscreen .dashboard-column > .glass-panel > .widget-content {
+.game-page-fullscreen .dashboard-column>.glass-panel>.widget-content {
   overflow: visible;
 }
 
@@ -1409,6 +2084,7 @@ body {
 
 /* Final MSI viewport contract. Keep after the legacy fullscreen rules. */
 @media (min-width: 901px) {
+
   .msi-page,
   .msi-page-fullscreen {
     display: block;
@@ -1435,7 +2111,7 @@ body {
     gap: clamp(8px, 1.1vh, 14px);
   }
 
-  .msi-page .msi-metrics-row > .msi-card {
+  .msi-page .msi-metrics-row>.msi-card {
     height: 100%;
     min-height: 0;
     max-height: none;
@@ -1450,9 +2126,9 @@ body {
     overflow: hidden;
   }
 
-  .msi-page .msi-details-row > .msi-card,
-  .msi-page .msi-utility-row > .msi-card,
-  .msi-page .msi-utility-stack > .msi-card {
+  .msi-page .msi-details-row>.msi-card,
+  .msi-page .msi-utility-row>.msi-card,
+  .msi-page .msi-utility-stack>.msi-card {
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -1465,7 +2141,7 @@ body {
     overflow: hidden;
   }
 
-  .msi-page .msi-utility-row > .msi-battery-master {
+  .msi-page .msi-utility-row>.msi-battery-master {
     height: 100%;
     min-height: 0;
     align-self: stretch;
@@ -1493,11 +2169,17 @@ body {
     grid-template-rows: minmax(0, 1.4fr) minmax(0, .6fr);
   }
 
-  .msi-page .msi-card { padding: 10px; }
-  .msi-page .msi-number { font-size: clamp(28px, 3.4vw, 40px); }
+  .msi-page .msi-card {
+    padding: 10px;
+  }
+
+  .msi-page .msi-number {
+    font-size: clamp(28px, 3.4vw, 40px);
+  }
 }
 
 @media (max-width: 900px) {
+
   .msi-page,
   .msi-page-fullscreen {
     height: auto;
@@ -1512,7 +2194,7 @@ body {
     overflow: visible;
   }
 
-  .msi-page .msi-metrics-row > .msi-card {
+  .msi-page .msi-metrics-row>.msi-card {
     height: clamp(104px, 17vh, 142px);
   }
 
@@ -1522,16 +2204,18 @@ body {
     overflow: visible;
   }
 
-  .msi-page .msi-details-row > .msi-card,
-  .msi-page .msi-utility-row > .msi-card,
-  .msi-page .msi-utility-stack > .msi-card,
+  .msi-page .msi-details-row>.msi-card,
+  .msi-page .msi-utility-row>.msi-card,
+  .msi-page .msi-utility-stack>.msi-card,
   .msi-page .msi-utility-row,
   .msi-page .msi-utility-stack {
     height: auto;
     overflow: visible;
   }
 
-  .msi-page .snapshot-list { max-height: 260px; }
+  .msi-page .snapshot-list {
+    max-height: 260px;
+  }
 }
 
 /* Display uses the same no-inner-scroll contract as MSI Hardware Control.
@@ -1544,7 +2228,7 @@ body {
     overflow: hidden;
   }
 
-  .display-layout-widget > .widget-content {
+  .display-layout-widget>.widget-content {
     min-height: 0;
     overflow: hidden !important;
     padding-right: 0 !important;
@@ -1592,11 +2276,26 @@ body {
     gap: 4px;
   }
 
-  .display-layout-summary .big-number { font-size: 17px; }
-  .display-layout-summary p { margin-top: 2px; }
-  .display-layout-meta { font-size: 8px; }
-  .display-layout-row { min-height: 20px; font-size: 8px; }
-  .display-layout-settings { height: 27px; }
+  .display-layout-summary .big-number {
+    font-size: 17px;
+  }
+
+  .display-layout-summary p {
+    margin-top: 2px;
+  }
+
+  .display-layout-meta {
+    font-size: 8px;
+  }
+
+  .display-layout-row {
+    min-height: 20px;
+    font-size: 8px;
+  }
+
+  .display-layout-settings {
+    height: 27px;
+  }
 }
 
 /* ── Shared adaptive-card contract ────────────────────────────────────────
@@ -1612,8 +2311,8 @@ body {
   overflow: visible !important;
 }
 
-.dashboard-main .adaptive-card > .widget-content,
-.game-page-main .adaptive-card > .widget-content {
+.dashboard-main .adaptive-card>.widget-content,
+.game-page-main .adaptive-card>.widget-content {
   min-height: 0;
   flex: 0 0 auto;
   overflow: visible !important;
@@ -1638,6 +2337,7 @@ body {
 }
 
 @media (max-height: 780px) and (min-width: 601px) {
+
   .dashboard-main,
   .game-page-main {
     --widget-padding: 8px;
@@ -1668,7 +2368,7 @@ body {
     min-height: var(--dashboard-brand-row-height);
   }
 
-  .dashboard-main:not(.dashboard-fullscreen) .dashboard-left-area > .dashboard-column:nth-child(2)::before,
+  .dashboard-main:not(.dashboard-fullscreen) .dashboard-left-area>.dashboard-column:nth-child(2)::before,
   .dashboard-main:not(.dashboard-fullscreen) .dashboard-right-column::before {
     display: block;
     height: var(--dashboard-brand-row-height);
@@ -1689,7 +2389,7 @@ body {
     flex: 0 0 auto !important;
   }
 
-  .dashboard-main .display-layout-widget > .widget-content {
+  .dashboard-main .display-layout-widget>.widget-content {
     min-height: 0;
     flex: 0 0 auto;
     overflow: hidden !important;

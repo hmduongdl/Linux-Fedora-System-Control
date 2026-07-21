@@ -70,7 +70,7 @@ const MediaPlayerWidget = memo(function MediaPlayerWidget() {
     return () => window.clearInterval(timer);
   }, [media?.playback_status, media?.length_seconds, isDragging]);
 
-  if (!media) {
+  if (!media || !media.title || !media.title.trim() || media.playback_status === "Stopped") {
     if (!isTelemetryConnected) {
       return <MediaSkeleton />;
     }
