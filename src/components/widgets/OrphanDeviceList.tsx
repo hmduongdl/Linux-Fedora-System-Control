@@ -104,39 +104,38 @@ export function OrphanDeviceList() {
                 {!isCollapsed && (
                   <div className="space-y-1.5 pl-1">
                     {devList.map((dev) => (
-                        <div
-                          key={dev.id}
-                          className="h-[42px] rounded-lg border border-white/5 bg-[#0E0F16]/60 px-2.5 py-1.5 flex items-center justify-between gap-2.5 hover:border-primary/30 transition-all"
-                        >
-                          {/* Left: Device Name + Vendor */}
-                          <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                            <div className="shrink-0 rounded-md bg-white/5 p-1 border border-white/5">
-                              {getCategoryIcon(dev.category)}
-                            </div>
-                            <div className="min-w-0 flex-1 truncate">
-                              <span className="text-[13.5px] font-bold text-slate-200 truncate" title={dev.name}>
-                                {dev.name}
-                              </span>
-                              <span className="text-[12px] text-slate-400 ml-1.5 font-normal">
-                                · {dev.vendor}
-                              </span>
-                            </div>
+                      <div
+                        key={dev.id}
+                        className="h-[42px] rounded-lg border border-white/5 bg-[#0E0F16]/60 px-2.5 py-1.5 flex items-center justify-between gap-2.5 hover:border-primary/30 transition-all"
+                      >
+                        {/* Left: Device Name + Vendor */}
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                          <div className="shrink-0 rounded-md bg-white/5 p-1 border border-white/5">
+                            {getCategoryIcon(dev.category)}
                           </div>
-
-                          {/* Right: Status badge */}
-                          <div className="flex items-center gap-2 shrink-0">
-                            <span
-                              className={`rounded px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ${
-                                dev.status === "missing"
-                                  ? "text-pink-400 bg-pink-500/10 border border-pink-500/20"
-                                  : "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20"
-                              }`}
-                            >
-                              {dev.status_text}
+                          <div className="min-w-0 flex-1 truncate">
+                            <span className="text-[13.5px] font-bold text-slate-200 truncate" title={dev.name}>
+                              {dev.name}
+                            </span>
+                            <span className="text-[12px] text-slate-400 ml-1.5 font-normal">
+                              · {dev.vendor}
                             </span>
                           </div>
                         </div>
-                      ))
+
+                        {/* Right: Status badge */}
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span
+                            className={`rounded px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ${dev.status === "missing"
+                                ? "text-pink-400 bg-pink-500/10 border border-pink-500/20"
+                                : "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20"
+                              }`}
+                          >
+                            {dev.status_text}
+                          </span>
+                        </div>
+                      </div>
+                    ))
                     }
                   </div>
                 )}
